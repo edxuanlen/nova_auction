@@ -31,6 +31,7 @@
     "@wagmi/cli": "latest",
     "antd": "^5.16.2",
     "buffer": "^6.0.3",
+    "react-router-dom": "^6.23.0",
     "styled-components": "^6.1.9",
     "typechain": "^8.3.2",
     "typescript": "^5.2.2",

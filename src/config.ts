@@ -23,6 +23,8 @@ const projectId = 'bccf3efae40ada68c973e1623e1b448a'
 //     },
 // };
 
+export const ADMIN_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'; // 配置的管理员地址
+
 
 export const config = createConfig({
     chains: [foundry],
@@ -30,7 +32,8 @@ export const config = createConfig({
         // [mainnet.id]: http(),
         // [polygon.id]: http(),
         // [x1Testnet.id]: http(),
-        [foundry.id]: http('http://10.227.60.68:8545/'),
+        [foundry.id]: http('http://127.0.0.1:8545/'),
+        // [foundry.id]: http('http://10.227.60.68:8545/'),
         // [hardhat.id]: http(),
         // [localhost.id]: http(),
         // []

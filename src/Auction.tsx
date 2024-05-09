@@ -17,7 +17,7 @@ import {
 
 import { switchChain } from '@wagmi/core'
 
-import { config } from './config';
+import { config, ADMIN_ADDRESS } from './config';
 const queryClient = new QueryClient();
 
 import { getezETHBalance } from './components/Account'
@@ -29,7 +29,7 @@ import { ethers } from 'ethers';
 import { startCountdownTimer } from './utils/time';
 
 import { PointsTabs, CustomModal } from './components';
-
+import BackendPage from './pages/BackendPage';
 
 import {
   provider,
@@ -50,6 +50,7 @@ import { foundry } from 'viem/chains';
 
 import EarnPage from './pages/EarnPage';
 import { getBalance } from 'viem/actions';
+import { useNavigate } from 'react-router-dom'; // 导入 useHistory 钩子
 
 const AuctionPage = () => {
   const [lastTradedPrice, setLastTradedPrice] = useState(5);
@@ -73,6 +74,8 @@ const AuctionPage = () => {
   const [selectedTab, setSelectedTab] = useState('EzPoints');
 
   const pointsMap = new Map<string, number>();
+
+  const navigate = useNavigate();
 
 
   // 弹窗
@@ -271,6 +274,7 @@ const AuctionPage = () => {
     setIsOpen(false);
   }
 
+  const isAdmin = (address == ADMIN_ADDRESS);
 
   return (
     <WagmiProvider config={config}>
@@ -294,6 +298,9 @@ const AuctionPage = () => {
               </Tab>
             </TabContainer>
             <WalletOptionsButton />
+            {isAdmin &&
+              (<BidHistoryButton onClick={() => (navigate("/admin"))}>Go to Backend</BidHistoryButton>)
+            }
 
           </Header>
           {activeTab === 'earn' && (
@@ -400,7 +407,7 @@ const AuctionPage = () => {
         </Container >
 
       </QueryClientProvider>
-    </WagmiProvider>
+    </WagmiProvider >
   );
 };
 
