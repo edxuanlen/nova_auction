@@ -12,7 +12,8 @@ import {
   useAccount,
   useSimulateContract,
   useSignMessage,
-  useWriteContract
+  useWriteContract,
+  useWatchContractEvent
 } from 'wagmi';
 
 import { switchChain } from '@wagmi/core'
@@ -20,16 +21,21 @@ import { switchChain } from '@wagmi/core'
 import { config, ADMIN_ADDRESS } from './config';
 const queryClient = new QueryClient();
 
-import { getezETHBalance } from './components/Account'
-
 import { WalletOptionsButton } from './Wallet'
 import { formatEther, erc20Abi, maxUint256, etherUnits, maxUint8 } from 'viem'
 import { ethers } from 'ethers';
 
 import { startCountdownTimer } from './utils/time';
 
-import { PointsTabs, CustomModal } from './components';
+import { PointsTabs, CustomModal, BidHistory } from './components';
 import BackendPage from './pages/BackendPage';
+
+import './components/EventWatcher';
+
+import { watchContractEvent } from '@wagmi/core'
+
+import { contract, getAllowance } from './utils/contract';
+
 
 import {
   provider,
@@ -38,7 +44,8 @@ import {
   auctionContractAddress,
   ezETHContractAddress,
   useSimulateAuctionContract,
-  auctionABI
+  auctionABI,
+  getLogerWithWalletAddress
 } from './utils/contract';
 
 // const { connector } = useAccount();
@@ -51,6 +58,8 @@ import { foundry } from 'viem/chains';
 import EarnPage from './pages/EarnPage';
 import { getBalance } from 'viem/actions';
 import { useNavigate } from 'react-router-dom'; // 导入 useHistory 钩子
+import { WalletBalance } from './styles/styled';
+import { EventInfo } from './types';
 
 const AuctionPage = () => {
   const [lastTradedPrice, setLastTradedPrice] = useState(5);
@@ -66,20 +75,23 @@ const AuctionPage = () => {
 
   const { isConnected, address } = useAccount();
 
-  const onBidHistoryClick = () => { };
   const [amountOfezETH, setAmountOfezETH] = useState(0.0);
   const [amountOfEzPoints, setAmountOfEzPoints] = useState(0.0);
   const [amountOfElPoints, setAmountOfElPoints] = useState(0.0);
 
   const [selectedTab, setSelectedTab] = useState('EzPoints');
+  const [needApprove, setNeedApprove] = useState(true);
 
   const pointsMap = new Map<string, number>();
 
   const navigate = useNavigate();
 
 
+
   // 弹窗
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenBidHistory, setIsOpenBidHistory] = useState(false);
+
   const [modalText, setModalText] = useState('');
 
   pointsMap.set('EzPoints', 0);
@@ -102,6 +114,27 @@ const AuctionPage = () => {
     console.log("Effect selectedTab: ", selectedTab);
     getAuctionCountdown();
   }, [selectedTab]);
+
+  const [events, setEvents] = useState<EventInfo[] | undefined>(undefined);
+
+  useEffect(() => {
+    fetchData();
+  }, [address]);
+
+  const fetchData = async () => {
+    if (address === undefined || address === null) {
+      return;
+    }
+    const logs = await getLogerWithWalletAddress(address);
+    setEvents(logs);
+
+    const result = await getAllowance(address);
+    if (result === '0') {
+      setNeedApprove(true);
+    } else {
+      setNeedApprove(false);
+    }
+  };
 
   const getContractBalance = async () => {
     if (address === undefined || address === null) {
@@ -154,7 +187,7 @@ const AuctionPage = () => {
     setBidQuantity(points_to_sell.toFixed(0));
     console.log("points to sell", points_to_sell);
     setBidPrice(starting_price.toFixed(4));
-    setTotalPrice((starting_price * points_to_sell).toFixed(12));
+    setTotalPrice((starting_price * points_to_sell).toFixed(6));
     // pointsToSell
     // startingPrice
   };
@@ -170,13 +203,13 @@ const AuctionPage = () => {
   const handleBidQuantityChange = (e) => {
     const quantity = e.target.value;
     setBidQuantity(quantity);
-    setTotalPrice((quantity * Number(bidPrice)).toFixed(12));
+    setTotalPrice((quantity * Number(bidPrice)).toFixed(6));
   };
 
   const handleBidPriceChange = (e) => {
     const price = e.target.value;
     setBidPrice(price);
-    setTotalPrice((Number(bidQuantity) * price).toFixed(12));
+    setTotalPrice((Number(bidQuantity) * price).toFixed(6));
   };
 
   const handleBid = async () => {
@@ -199,7 +232,7 @@ const AuctionPage = () => {
       console.log('Bid price:', bidPrice);
       console.log('Starting price:', startingPrice.toFixed(4));
       setModalText(`Bid price must be greater than starting price.
-        BidPrice: ${bidPrice}  Starting price: ${startingPrice.toFixed(4)}`);
+          BidPrice: ${bidPrice}  Starting price: ${startingPrice.toFixed(4)}`);
       setIsOpen(true);
 
       return;
@@ -274,7 +307,7 @@ const AuctionPage = () => {
     setIsOpen(false);
   }
 
-  const isAdmin = (address == ADMIN_ADDRESS);
+  const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
 
   return (
     <WagmiProvider config={config}>
@@ -351,7 +384,14 @@ const AuctionPage = () => {
                   </AuctionCountdownValues>
                 </div>
 
-                <BidHistoryButton onClick={onBidHistoryClick}>My Bid History<ArrowIcon /></BidHistoryButton>
+                <BidHistoryButton onClick={() => setIsOpenBidHistory(true)}>My Bid History<ArrowIcon /></BidHistoryButton>
+                {address && events &&
+                  (
+                    <BidHistory events={events}
+                      isOpen={isOpenBidHistory}
+                      onClose={() => (setIsOpenBidHistory(false))} />
+                  )}
+
               </AuctionCountdownContainer>
 
               <BidContainer>
@@ -381,16 +421,16 @@ const AuctionPage = () => {
                   <TotalPriceKey>
                     Total Price:
                   </TotalPriceKey>
-
                   <TotalPriceValue>
-                    {totalPrice} ETH
+                    {totalPrice} ezETH
+                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
                   </TotalPriceValue>
                 </TotalPriceContainer>
               </BidContainer>
 
 
               <BidButtonContainer>
-                {(Number(bidQuantity) <= pointsToSell) ?
+                {(Number(totalPrice) <= amountOfezETH) ?
                   <BidButton onClick={handleBid}>Bid</BidButton>
                   :
                   <BidButton>Insufficient balance</BidButton>
@@ -461,27 +501,6 @@ const Tab = styled.div`
   }
 `;
 
-const ConnectWalletButton = styled.button`
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  background-color: #4caf50;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 15%;
-
-//   调整 ConnectWalletButton 组件的样式,使其更加醒目
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  background-color: #2196f3;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #1976d2;
-  }
-`;
 
 
 const Content = styled.div`
@@ -762,7 +781,7 @@ const TotalPriceKey = styled.div`
 `;
 
 const TotalPriceValue = styled.div`
-  // display: flex;
+  display: flex;
   // justify-content: flex-end;
   font-size: 1rem;
   font-weight: bold;
@@ -770,11 +789,5 @@ const TotalPriceValue = styled.div`
   color: #4ebe80;
 `;
 
-const SupplyAmmountValue = styled.div`
-  font-size: 1rem;
-  font-weight: bold;
-  margin-right: 5%;
-  color: #000000;
-`;
 
 export default AuctionPage;

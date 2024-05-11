@@ -26,6 +26,7 @@ import type {
 export type AuctionInfoStruct = {
   startTime: BigNumberish;
   duration: BigNumberish;
+  targetPoints: BigNumberish;
   pointsToSell: BigNumberish;
   startingPrice: BigNumberish;
   state: BigNumberish;
@@ -34,12 +35,14 @@ export type AuctionInfoStruct = {
 export type AuctionInfoStructOutput = [
   startTime: bigint,
   duration: bigint,
+  targetPoints: bigint,
   pointsToSell: bigint,
   startingPrice: bigint,
   state: bigint
 ] & {
   startTime: bigint;
   duration: bigint;
+  targetPoints: bigint;
   pointsToSell: bigint;
   startingPrice: bigint;
   state: bigint;
@@ -73,6 +76,7 @@ export interface ControllerInterface extends Interface {
       | "pointTypes"
       | "redeemables"
       | "renounceOwnership"
+      | "toLpToken"
       | "toMainToken"
       | "totalPoints"
       | "trackedBalance"
@@ -83,7 +87,15 @@ export interface ControllerInterface extends Interface {
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "Initialized" | "OwnershipTransferred"
+    nameOrSignatureOrTopic:
+      | "Charge"
+      | "Deal"
+      | "Deposit"
+      | "Dividend"
+      | "Initialized"
+      | "OwnershipTransferred"
+      | "Refund"
+      | "Withdraw"
   ): EventFragment;
 
   encodeFunctionData(
@@ -172,6 +184,10 @@ export interface ControllerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "toLpToken",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "toMainToken",
     values: [BigNumberish]
   ): string;
@@ -258,6 +274,7 @@ export interface ControllerInterface extends Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "toLpToken", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "toMainToken",
     data: BytesLike
@@ -282,6 +299,87 @@ export interface ControllerInterface extends Interface {
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
+export namespace ChargeEvent {
+  export type InputTuple = [
+    from: AddressLike,
+    pt: BigNumberish,
+    price: BigNumberish,
+    points: BigNumberish
+  ];
+  export type OutputTuple = [
+    from: string,
+    pt: bigint,
+    price: bigint,
+    points: bigint
+  ];
+  export interface OutputObject {
+    from: string;
+    pt: bigint;
+    price: bigint;
+    points: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace DealEvent {
+  export type InputTuple = [
+    bidder: AddressLike,
+    pt: BigNumberish,
+    price: BigNumberish,
+    amount: BigNumberish
+  ];
+  export type OutputTuple = [
+    bidder: string,
+    pt: bigint,
+    price: bigint,
+    amount: bigint
+  ];
+  export interface OutputObject {
+    bidder: string;
+    pt: bigint;
+    price: bigint;
+    amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace DepositEvent {
+  export type InputTuple = [
+    from: AddressLike,
+    lpt: BigNumberish,
+    ez: BigNumberish
+  ];
+  export type OutputTuple = [from: string, lpt: bigint, ez: bigint];
+  export interface OutputObject {
+    from: string;
+    lpt: bigint;
+    ez: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace DividendEvent {
+  export type InputTuple = [amount: BigNumberish, current: BigNumberish];
+  export type OutputTuple = [amount: bigint, current: bigint];
+  export interface OutputObject {
+    amount: bigint;
+    current: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace InitializedEvent {
   export type InputTuple = [version: BigNumberish];
   export type OutputTuple = [version: bigint];
@@ -300,6 +398,49 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace RefundEvent {
+  export type InputTuple = [
+    to: AddressLike,
+    pt: BigNumberish,
+    price: BigNumberish,
+    points: BigNumberish
+  ];
+  export type OutputTuple = [
+    to: string,
+    pt: bigint,
+    price: bigint,
+    points: bigint
+  ];
+  export interface OutputObject {
+    to: string;
+    pt: bigint;
+    price: bigint;
+    points: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace WithdrawEvent {
+  export type InputTuple = [
+    to: AddressLike,
+    lpt: BigNumberish,
+    ez: BigNumberish
+  ];
+  export type OutputTuple = [to: string, lpt: bigint, ez: bigint];
+  export interface OutputObject {
+    to: string;
+    lpt: bigint;
+    ez: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -408,7 +549,7 @@ export interface Controller extends BaseContract {
       [bigint, bigint, bigint, bigint, bigint] & {
         startTime: bigint;
         duration: bigint;
-        pointsToSell: bigint;
+        targetPoints: bigint;
         startingPrice: bigint;
         state: bigint;
       }
@@ -449,6 +590,8 @@ export interface Controller extends BaseContract {
   >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
+
+  toLpToken: TypedContractMethod<[amountInEth: BigNumberish], [bigint], "view">;
 
   toMainToken: TypedContractMethod<
     [amountInLpt: BigNumberish],
@@ -543,7 +686,7 @@ export interface Controller extends BaseContract {
       [bigint, bigint, bigint, bigint, bigint] & {
         startTime: bigint;
         duration: bigint;
-        pointsToSell: bigint;
+        targetPoints: bigint;
         startingPrice: bigint;
         state: bigint;
       }
@@ -598,6 +741,9 @@ export interface Controller extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "toLpToken"
+  ): TypedContractMethod<[amountInEth: BigNumberish], [bigint], "view">;
+  getFunction(
     nameOrSignature: "toMainToken"
   ): TypedContractMethod<[amountInLpt: BigNumberish], [bigint], "view">;
   getFunction(
@@ -624,6 +770,34 @@ export interface Controller extends BaseContract {
   ): TypedContractMethod<[amountInLPToken: BigNumberish], [void], "nonpayable">;
 
   getEvent(
+    key: "Charge"
+  ): TypedContractEvent<
+    ChargeEvent.InputTuple,
+    ChargeEvent.OutputTuple,
+    ChargeEvent.OutputObject
+  >;
+  getEvent(
+    key: "Deal"
+  ): TypedContractEvent<
+    DealEvent.InputTuple,
+    DealEvent.OutputTuple,
+    DealEvent.OutputObject
+  >;
+  getEvent(
+    key: "Deposit"
+  ): TypedContractEvent<
+    DepositEvent.InputTuple,
+    DepositEvent.OutputTuple,
+    DepositEvent.OutputObject
+  >;
+  getEvent(
+    key: "Dividend"
+  ): TypedContractEvent<
+    DividendEvent.InputTuple,
+    DividendEvent.OutputTuple,
+    DividendEvent.OutputObject
+  >;
+  getEvent(
     key: "Initialized"
   ): TypedContractEvent<
     InitializedEvent.InputTuple,
@@ -637,8 +811,66 @@ export interface Controller extends BaseContract {
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
   >;
+  getEvent(
+    key: "Refund"
+  ): TypedContractEvent<
+    RefundEvent.InputTuple,
+    RefundEvent.OutputTuple,
+    RefundEvent.OutputObject
+  >;
+  getEvent(
+    key: "Withdraw"
+  ): TypedContractEvent<
+    WithdrawEvent.InputTuple,
+    WithdrawEvent.OutputTuple,
+    WithdrawEvent.OutputObject
+  >;
 
   filters: {
+    "Charge(address,uint8,uint256,uint256)": TypedContractEvent<
+      ChargeEvent.InputTuple,
+      ChargeEvent.OutputTuple,
+      ChargeEvent.OutputObject
+    >;
+    Charge: TypedContractEvent<
+      ChargeEvent.InputTuple,
+      ChargeEvent.OutputTuple,
+      ChargeEvent.OutputObject
+    >;
+
+    "Deal(address,uint8,uint256,uint256)": TypedContractEvent<
+      DealEvent.InputTuple,
+      DealEvent.OutputTuple,
+      DealEvent.OutputObject
+    >;
+    Deal: TypedContractEvent<
+      DealEvent.InputTuple,
+      DealEvent.OutputTuple,
+      DealEvent.OutputObject
+    >;
+
+    "Deposit(address,uint256,uint256)": TypedContractEvent<
+      DepositEvent.InputTuple,
+      DepositEvent.OutputTuple,
+      DepositEvent.OutputObject
+    >;
+    Deposit: TypedContractEvent<
+      DepositEvent.InputTuple,
+      DepositEvent.OutputTuple,
+      DepositEvent.OutputObject
+    >;
+
+    "Dividend(uint256,uint256)": TypedContractEvent<
+      DividendEvent.InputTuple,
+      DividendEvent.OutputTuple,
+      DividendEvent.OutputObject
+    >;
+    Dividend: TypedContractEvent<
+      DividendEvent.InputTuple,
+      DividendEvent.OutputTuple,
+      DividendEvent.OutputObject
+    >;
+
     "Initialized(uint64)": TypedContractEvent<
       InitializedEvent.InputTuple,
       InitializedEvent.OutputTuple,
@@ -659,6 +891,28 @@ export interface Controller extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "Refund(address,uint8,uint256,uint256)": TypedContractEvent<
+      RefundEvent.InputTuple,
+      RefundEvent.OutputTuple,
+      RefundEvent.OutputObject
+    >;
+    Refund: TypedContractEvent<
+      RefundEvent.InputTuple,
+      RefundEvent.OutputTuple,
+      RefundEvent.OutputObject
+    >;
+
+    "Withdraw(address,uint256,uint256)": TypedContractEvent<
+      WithdrawEvent.InputTuple,
+      WithdrawEvent.OutputTuple,
+      WithdrawEvent.OutputObject
+    >;
+    Withdraw: TypedContractEvent<
+      WithdrawEvent.InputTuple,
+      WithdrawEvent.OutputTuple,
+      WithdrawEvent.OutputObject
     >;
   };
 }

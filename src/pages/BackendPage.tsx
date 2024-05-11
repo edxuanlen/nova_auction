@@ -6,11 +6,11 @@ import { ADMIN_ADDRESS } from '../config';
 import { useAccount, } from 'wagmi';
 
 interface Auction {
-    startTime: Date;
-    endTime: Date;
-    pointsType: string;
-    pointsQuantity: number;
-    startingBid: number;
+  startTime: Date;
+  endTime: Date;
+  pointsType: string;
+  pointsQuantity: number;
+  startingBid: number;
 }
 
 const Container = styled.div`
@@ -105,36 +105,36 @@ const StyledButton = styled(Button)`
 `;
 
 interface AllAuctionsProps {
-    auctions: Auction[];
-    handleDelete: (index: number) => void;
+  auctions: Auction[];
+  handleDelete: (index: number) => void;
 }
 
 const AllAuctions: React.FC<AllAuctionsProps> = ({ auctions, handleDelete }) => {
-    return (
-        <AllAuctionsContainer>
-            <h2>All Auctions</h2>
-            {auctions.map((auction, index) => (
-                <AuctionItem key={index}>
-                    <AuctionLabel>Start Time:</AuctionLabel>
-                    <AuctionDetail>{auction.startTime.toISOString()}</AuctionDetail>
+  return (
+    <AllAuctionsContainer>
+      <h2>All Auctions</h2>
+      {auctions.map((auction, index) => (
+        <AuctionItem key={index}>
+          <AuctionLabel>Start Time:</AuctionLabel>
+          <AuctionDetail>{auction.startTime.toISOString()}</AuctionDetail>
 
-                    <AuctionLabel>End Time:</AuctionLabel>
-                    <AuctionDetail>{auction.endTime.toISOString()}</AuctionDetail>
+          <AuctionLabel>End Time:</AuctionLabel>
+          <AuctionDetail>{auction.endTime.toISOString()}</AuctionDetail>
 
-                    <AuctionLabel>Points Type:</AuctionLabel>
-                    <AuctionDetail>{auction.pointsType}</AuctionDetail>
+          <AuctionLabel>Points Type:</AuctionLabel>
+          <AuctionDetail>{auction.pointsType}</AuctionDetail>
 
-                    <AuctionLabel>Points Quantity:</AuctionLabel>
-                    <AuctionDetail>{auction.pointsQuantity}</AuctionDetail>
+          <AuctionLabel>Points Quantity:</AuctionLabel>
+          <AuctionDetail>{auction.pointsQuantity}</AuctionDetail>
 
-                    <AuctionLabel>Starting Bid:</AuctionLabel>
-                    <AuctionDetail>{auction.startingBid}</AuctionDetail>
+          <AuctionLabel>Starting Bid:</AuctionLabel>
+          <AuctionDetail>{auction.startingBid}</AuctionDetail>
 
-                    <StyledButton onClick={() => handleDelete(index)}>Delete</StyledButton>
-                </AuctionItem>
-            ))}
-        </AllAuctionsContainer>
-    );
+          <StyledButton onClick={() => handleDelete(index)}>Delete</StyledButton>
+        </AuctionItem>
+      ))}
+    </AllAuctionsContainer>
+  );
 };
 
 
@@ -191,137 +191,137 @@ const SubmitButton = styled.button`
   }
 `;
 interface AuctionFormProps {
-    handleSubmit: () => void;
-    newAuction: Auction;
-    handleAuctionChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleSubmit: () => void;
+  newAuction: Auction;
+  handleAuctionChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
 const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, handleAuctionChange }) => {
-    return (
-        <FormContainer>
-            <h2>Create a New Auction</h2>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSubmit();
-                }}
-            >
-                <Label>
-                    Start Time:
-                    <Input
-                        type="datetime-local"
-                        name="startTime"
-                        value={newAuction.startTime.toISOString().substring(0, 16)}
-                        onChange={handleAuctionChange}
-                    />
-                </Label>
+  return (
+    <FormContainer>
+      <h2>Create a New Auction</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
+      >
+        <Label>
+          Start Time:
+          <Input
+            type="datetime-local"
+            name="startTime"
+            value={newAuction.startTime.toISOString().substring(0, 16)}
+            onChange={handleAuctionChange}
+          />
+        </Label>
 
-                <Label>
-                    End Time:
-                    <Input
-                        type="datetime-local"
-                        name="endTime"
-                        value={newAuction.endTime.toISOString().substring(0, 16)}
-                        onChange={handleAuctionChange}
-                    />
-                </Label>
+        <Label>
+          End Time:
+          <Input
+            type="datetime-local"
+            name="endTime"
+            value={newAuction.endTime.toISOString().substring(0, 16)}
+            onChange={handleAuctionChange}
+          />
+        </Label>
 
-                <Label>
-                    Points Type:
-                    <PointsSelect
-                        name="pointsType"
-                        value={newAuction.pointsType}
-                        onChange={handleAuctionChange}
-                    >
-                        <option value="EzPoints">EzPoints</option> {/* 第一个选项 */}
-                        <option value="ElPoints">ElPoints</option> {/* 第二个选项 */}
-                    </PointsSelect>
-                </Label>
+        <Label>
+          Points Type:
+          <PointsSelect
+            name="pointsType"
+            value={newAuction.pointsType}
+            onChange={handleAuctionChange}
+          >
+            <option value="EzPoints">EzPoints</option> {/* 第一个选项 */}
+            <option value="ElPoints">ElPoints</option> {/* 第二个选项 */}
+          </PointsSelect>
+        </Label>
 
-                <Label>
-                    Points Quantity:
-                    <Input
-                        type="number"
-                        name="pointsQuantity"
-                        value={newAuction.pointsQuantity}
-                        onChange={handleAuctionChange}
-                    />
-                </Label>
+        <Label>
+          Points Quantity:
+          <Input
+            type="number"
+            name="pointsQuantity"
+            value={newAuction.pointsQuantity}
+            onChange={handleAuctionChange}
+          />
+        </Label>
 
-                <Label>
-                    Starting Bid:
-                    <Input
-                        type="number"
-                        name="startingBid"
-                        value={newAuction.startingBid}
-                        onChange={handleAuctionChange}
-                    />
-                </Label>
+        <Label>
+          Starting Bid:
+          <Input
+            type="number"
+            name="startingBid"
+            value={newAuction.startingBid}
+            onChange={handleAuctionChange}
+          />
+        </Label>
 
-                <SubmitButton type="submit">Create Auction</SubmitButton>
-            </form>
-        </FormContainer>
-    );
+        <SubmitButton type="submit">Create Auction</SubmitButton>
+      </form>
+    </FormContainer>
+  );
 };
 
 
 const BackendPage = () => {
-    const { address } = useAccount();
+  const { address } = useAccount();
 
-    const [auctions, setAuctions] = useState<Auction[]>([]);
-    const [newAuction, setNewAuction] = useState<Auction>({
-        startTime: new Date(),
-        endTime: new Date(),
-        pointsType: '',
-        pointsQuantity: 0,
-        startingBid: 0,
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [newAuction, setNewAuction] = useState<Auction>({
+    startTime: new Date(),
+    endTime: new Date(),
+    pointsType: '',
+    pointsQuantity: 0,
+    startingBid: 0,
+  });
+
+  // 用于判断当前用户是否是管理员
+  const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
+
+  const handleAuctionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewAuction({
+      ...newAuction,
+      [name]: name === 'startTime' || name === 'endTime' ? new Date(value) : value,
     });
+  };
 
-    // 用于判断当前用户是否是管理员
-    const isAdmin = address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
+  const handleSubmit = () => {
+    // 处理提交拍卖会的逻辑
+    const newAuctions = [...auctions, newAuction];
+    setAuctions(newAuctions);
+    // 清空表单
+    setNewAuction({
+      startTime: new Date(),
+      endTime: new Date(),
+      pointsType: '',
+      pointsQuantity: 0,
+      startingBid: 0,
+    });
+  };
 
-    const handleAuctionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setNewAuction({
-            ...newAuction,
-            [name]: name === 'startTime' || name === 'endTime' ? new Date(value) : value,
-        });
-    };
+  const handleDelete = (index: number) => {
+    const updatedAuctions = auctions.filter((_, i) => i !== index);
+    setAuctions(updatedAuctions);
+  };
 
-    const handleSubmit = () => {
-        // 处理提交拍卖会的逻辑
-        const newAuctions = [...auctions, newAuction];
-        setAuctions(newAuctions);
-        // 清空表单
-        setNewAuction({
-            startTime: new Date(),
-            endTime: new Date(),
-            pointsType: '',
-            pointsQuantity: 0,
-            startingBid: 0,
-        });
-    };
-
-    const handleDelete = (index: number) => {
-        const updatedAuctions = auctions.filter((_, i) => i !== index);
-        setAuctions(updatedAuctions);
-    };
-
-    return (
+  return (
+    <div>
+      <h1>Auction Admin</h1>
+      {isAdmin ? (
         <div>
-            <h1>Auction Admin</h1>
-            {isAdmin ? (
-                <div>
-                    <AuctionForm handleSubmit={handleSubmit}
-                        newAuction={newAuction}
-                        handleAuctionChange={handleAuctionChange} />
-                    <AllAuctions auctions={auctions} handleDelete={handleDelete} />
-                </div>
-            ) : (
-                <p>You do not have access to this page.</p>
-            )}
+          <AuctionForm handleSubmit={handleSubmit}
+            newAuction={newAuction}
+            handleAuctionChange={handleAuctionChange} />
+          <AllAuctions auctions={auctions} handleDelete={handleDelete} />
         </div>
-    );
+      ) : (
+        <p>You do not have access to this page.</p>
+      )}
+    </div>
+  );
 }
 
 

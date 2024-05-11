@@ -29,7 +29,9 @@ import {
     ezETHContractAddress,
     useSimulateAuctionContract,
     auctionABI,
-    contract
+    contract,
+    getAllowance,
+    approveToken,
 } from '../utils/contract';
 
 import { config } from '../config';
@@ -37,6 +39,7 @@ import styled from 'styled-components';
 
 
 const EarnPage = () => {
+
 
     const [selectedTab, setSelectedTab] = useState('supply');
 
@@ -47,10 +50,10 @@ const EarnPage = () => {
     const [ezETHBalance, setezETHBalance] = useState(0);
     const { isConnected, address } = useAccount();
     const [withdrawBalance, setWithdrawBalance] = useState(0.0);
-    const [withdrawEzETHBalance, setWithdrawEzETHBalance] = useState(0.0);
+    const [withdrawBalanceShow, setWithdrawBalanceShow] = useState('0');
     const [change, setChange] = useState(true);
-
-    const amountSupplied = 0.02;
+    const [needApprove, setNeedApprove] = useState(false);
+    // TODO(dumengrong)
     const supplyAPR = 30;
 
     const handleMaxClick = () => {
@@ -75,8 +78,22 @@ const EarnPage = () => {
     useEffect(() => {
         getWalletBalance();
         getWithdrawBalance();
-    }, [change]);
+        checkApprove();
 
+
+    }, [change, isConnected]);
+
+    const checkApprove = async () => {
+        if (address == undefined) {
+            return;
+        }
+        const res = await getAllowance(address);
+        if (res != '0') {
+            setNeedApprove(false);
+        } else {
+            setNeedApprove(true);
+        }
+    }
 
     const getWalletBalance = async () => {
         if (ezETHBalance == null || address == undefined) {
@@ -88,8 +105,9 @@ const EarnPage = () => {
                 functionName: 'balanceOf',
                 args: [address]
             });
+            console.log("wallet balance result:", result);
 
-            setezETHBalance(Number(ethers.formatEther(result)));
+            setezETHBalance(Number(Number(ethers.formatEther(result)).toFixed(6)));
         }
     };
 
@@ -114,8 +132,9 @@ const EarnPage = () => {
             args: [address]
         });
         console.log("result:", result);
-        setWithdrawEzETHBalance(Number(ethers.formatEther(result)));
 
+
+        console.log("withdraw balance: ", result);
         const convertRes = await readContract(config, {
             abi: auctionABI,
             address: auctionContractAddress,
@@ -123,7 +142,11 @@ const EarnPage = () => {
             args: [result]
         });
 
-        setWithdrawBalance(Number(ethers.formatEther(convertRes)).toFixed(4));
+        console.log("convertRes: ", convertRes);
+
+        const balance = Number(ethers.formatEther(convertRes));
+        setWithdrawBalance(balance);
+        setWithdrawBalanceShow(balance.toFixed(6));
     };
 
 
@@ -193,49 +216,7 @@ const EarnPage = () => {
         // convert to ether
         const etherAmount = ethers.parseEther(amount.toString())
 
-        // approve
-        if (address != undefined) {
-
-            const result = await readContract(config, {
-                abi: erc20Abi,
-                address: ezETHContractAddress,
-                functionName: 'allowance',
-                args: [
-                    address,
-                    auctionContractAddress,
-                ],
-                chainId: foundry.id,
-            })
-            console.log("result: ", result);
-
-            if (result.valueOf() < etherAmount) {
-
-                const { request } = await simulateContract(config, {
-                    abi: erc20Abi,
-                    address: ezETHContractAddress,
-                    functionName: 'approve',
-                    args: [
-                        auctionContractAddress,
-                        maxUint256,
-                        // ethers.parseEther(amount.toString()),
-                    ],
-                    chainId: foundry.id,
-                })
-                const hash = await writeContract(config, request)
-
-                console.log("hash: ", hash);
-
-                const transactionReceipt = waitForTransactionReceipt(config, {
-                    hash: hash,
-                })
-
-                console.log("transactionReceipt: ", transactionReceipt);
-            }
-
-        }
-
         // 准备合约写入，传递合约信息和要调用的方法及其参数
-
         const result = simulateContract(
             config, {
             abi: auctionABI,
@@ -261,7 +242,6 @@ const EarnPage = () => {
 
         console.log("transactionReceipt: ", transactionReceipt);
         setChange(!change);
-
     }
 
     const onWithdraw = async () => {
@@ -286,10 +266,16 @@ const EarnPage = () => {
             return;
         }
 
-        console.log("你即将提取:", amount);
-
         // convert to ether
         const etherAmount = ethers.parseEther(amount.toString())
+
+        // etherAmount 需要转换一下
+        const LPToken = await readContract(config, {
+            abi: auctionABI,
+            address: auctionContractAddress,
+            functionName: "toLpToken",
+            args: [etherAmount]
+        });
 
         // 准备合约写入，传递合约信息和要调用的方法及其参数
 
@@ -298,7 +284,7 @@ const EarnPage = () => {
             abi: auctionABI,
             address: auctionContractAddress,
             functionName: "withdraw",
-            args: [etherAmount]
+            args: [LPToken]
         });
 
         console.log("simulateContract result: ", result);
@@ -307,7 +293,7 @@ const EarnPage = () => {
             abi: auctionABI,
             address: auctionContractAddress,
             functionName: "withdraw",
-            args: [etherAmount]
+            args: [LPToken]
         });
 
 
@@ -321,6 +307,15 @@ const EarnPage = () => {
 
 
         setChange(!change);
+    }
+
+    const onApprove = async () => {
+        if (address == undefined) {
+            console.log("还没登陆！");
+            return;
+        }
+        console.log("onApprove allowance.");
+        approveToken(address);
     }
 
     return (
@@ -355,7 +350,7 @@ const EarnPage = () => {
             )}
             {selectedTab === 'withdraw' && (
                 <>
-                    <WalletBalance>Max Withdraw Amount: {withdrawBalance} ezETH</WalletBalance>
+                    <WalletBalance>Max Withdraw Amount: {withdrawBalanceShow} ezETH</WalletBalance>
                 </>
             )}
 
@@ -363,7 +358,7 @@ const EarnPage = () => {
             <StatsContainer>
                 <Stat>
                     <StatKey>My total captial</StatKey>
-                    <SupplyAmmountValue>{withdrawBalance} ezETH</SupplyAmmountValue>
+                    <SupplyAmmountValue>{withdrawBalanceShow} ezETH</SupplyAmmountValue>
                 </Stat>
                 <Stat>
                     <StatKey>Supply APR</StatKey>
@@ -371,7 +366,14 @@ const EarnPage = () => {
                 </Stat>
             </StatsContainer>
             <BidButtonContainer>
-                {isConnected ? (
+                {needApprove && (
+                    <BidButton
+                        onClick={onApprove}
+                    >
+                        'Approve ezETH'
+                    </BidButton>
+                )}
+                {!needApprove && isConnected ? (
                     <BidButton
                         onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
                         disabled={selectedTab === 'withdraw' ? amount > withdrawBalance : false}
