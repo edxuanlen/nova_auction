@@ -25,3 +25,21 @@ export function startCountdownTimer(
         });
     }, updateInterval * 1000);
 }
+
+export function convertSecTsToDate(timestamp: number): Date {
+    return new Date(timestamp * 1000);
+}
+
+
+export const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    });
+};

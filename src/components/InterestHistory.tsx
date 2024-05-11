@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { EventInfo } from '../types';
+import { EarningInfo } from '../types';
 import styled from 'styled-components';
-import {
-    getLogerWithWalletAddress
-} from '../utils/contract';
-import { etherUnits } from 'viem';
+import { formatDate } from '../utils/time';
 
-import { ethers } from 'ethers';
 const PopupOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -50,43 +46,37 @@ const StyledTable = styled.table`
   }
 `;
 
-interface BidHistoryProps {
-    events: EventInfo[];
+interface InterestHistoryProps {
+    infos: EarningInfo[];
     isOpen: boolean;
     onClose: () => void;
 }
 
-const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, onClose }) => {
+const InterestHistory: React.FC<InterestHistoryProps> = ({ infos, isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
         <PopupOverlay onClick={onClose}>
-            {events.length === 0 ? (
+            {infos.length === 0 ? (
                 <PopupContent>
-                    <h2>Bid History</h2>
+                    <h2>Earning Record</h2>
                     <p>Not Found any record</p>
                 </PopupContent>
             ) : (
                 <PopupContent>
-                    <h2>Bid History</h2>
+                    <h2>Earning Record</h2>
                     <StyledTable>
                         <thead>
                             <tr>
-                                <th>Status</th>
-                                <th>Point Type</th>
-                                <th>Transcation Price (ezETH)</th>
-                                <th>Transcation Points</th>
-                                <th>Transaction Time</th>
+                                <th>Interest income(ezETH)</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {events.map((event, index) => (
+                            {infos.map((info, index) => (
                                 <tr key={index}>
-                                    <td>{event.eventType}</td>
-                                    <td>{event.pointType === 1n ? 'EzPoints' : 'ElPoints'}</td>
-                                    <td>{ethers.formatEther(event.bidAmount)}</td>
-                                    <td>{ethers.formatEther(event.bidPoints)}</td>
-                                    <td>{event.transactionTime?.toLocaleString() || ''}</td>
+                                    <td>{info.EarnAmount.toFixed(6)}</td>
+                                    <td>{formatDate(info.EarnTime)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -96,4 +86,4 @@ const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, onClose }) => {
         </PopupOverlay>
     );
 };
-export default BidHistory;
+export default InterestHistory;

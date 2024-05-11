@@ -1,5 +1,5 @@
 
-type EventInfo = {
+export type EventInfo = {
     eventType: string;
     address: string;
     pointType: bigint;
@@ -8,4 +8,7 @@ type EventInfo = {
     transactionTime?: Date;
 };
 
-export default EventInfo;
+export type EarningInfo = {
+    EarnAmount: number;
+    EarnTime: Date;
+}

@@ -1,1 +1,1 @@
-export type { default as EventInfo } from './EventInfo';
+export type { EventInfo, EarningInfo } from './EventInfo';

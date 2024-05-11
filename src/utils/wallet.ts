@@ -1,6 +1,16 @@
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName, useBalance } from 'wagmi';
 import { BigNumber } from 'ethers';
 import { ezETHContractAddress } from './contract';
+import { formatEther, erc20Abi, maxUint256, etherUnits, maxUint8, Address } from 'viem'
+
+import { ethers } from 'ethers';
+import {
+    simulateContract, writeContract,
+    readContract, waitForTransactionReceipt
+} from '@wagmi/core'
+
+import { config } from '../config';
+
 
 // 自定义钩子，返回余额
 export const getezETHBalance = (): {
@@ -29,4 +39,32 @@ export const getezETHBalance = (): {
         isFetching: isLoading,
         error,
     };
+};
+
+
+export async function getWalletBalance(address: Address) {
+    if (address == undefined) {
+        return 0;
+    }
+    const result = await readContract(config, {
+        abi: erc20Abi,
+        address: ezETHContractAddress,
+        functionName: 'balanceOf',
+        args: [address]
+    });
+    console.log("wallet balance result:", result);
+
+    return Number(ethers.formatEther(result))
+}
+
+export const flushWalletBalance = async (address: Address,
+    setezETHBalance: (balance: number) => void) => {
+    if (address == undefined) {
+        return;
+    } else {
+        const result = await getWalletBalance(address);
+        console.log("wallet balance result:", result);
+
+        setezETHBalance(result);
+    }
 };

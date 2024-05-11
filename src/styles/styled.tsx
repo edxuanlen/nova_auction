@@ -20,9 +20,20 @@ export const EarnContent = Content;
 
 
 export const WalletBalance = styled.div`
-  margin-bottom: 20px;
   color: #000000;
   font-weight: bold;
+  margin-right: 2%;
+`;
+
+export const ClickableText = styled.span`
+  ${props => props.clickable && `
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #ff0000;
+    }
+  `}
 `;
 
 // Bid

@@ -3,14 +3,14 @@ import { useAccount } from 'wagmi';
 import { formatEther, erc20Abi, maxUint256 } from 'viem';
 import { ethers } from 'ethers';
 // import { readContract } from '@wagmi/core';
-import { foundry } from 'viem/chains';
+import { flowPreviewnet, foundry } from 'viem/chains';
 import ETHLogo from '../resources/ethLogo.png';
 
 import { getezETHBalance } from '../utils/wallet';
-import { Tabs, TabButton } from '../components';
+import { Tabs, TabButton, InterestHistory } from '../components';
 import {
     EarnContent, WalletBalance, AmountContainer,
-    StatsContainer, Stat, StatKey, MaxButton, BidButton
+    StatsContainer, Stat, StatKey, MaxButton, BidButton, ClickableText
 } from '../styles/styled';
 import { switchChain } from '@wagmi/core'
 import {
@@ -32,10 +32,15 @@ import {
     contract,
     getAllowance,
     approveToken,
+    getApyHistory
 } from '../utils/contract';
+
+import { flushWalletBalance } from '../utils/wallet';
 
 import { config } from '../config';
 import styled from 'styled-components';
+import { EarningInfo } from '../types';
+import { formatPercentage } from '../utils/math';
 
 
 const EarnPage = () => {
@@ -47,12 +52,17 @@ const EarnPage = () => {
     // const { balance, isFetching, error } = getezETHBalance();
 
     // const { balance: ezETHBalance } = getezETHBalance();
-    const [ezETHBalance, setezETHBalance] = useState(0);
+    const [ezETHBalance, setEzETHBalance] = useState(0);
+    const [TotalEarning, setTotalEarning] = useState(0);
     const { isConnected, address } = useAccount();
     const [withdrawBalance, setWithdrawBalance] = useState(0.0);
     const [withdrawBalanceShow, setWithdrawBalanceShow] = useState('0');
     const [change, setChange] = useState(true);
     const [needApprove, setNeedApprove] = useState(false);
+    const [isOpenIncome, setIsOpenIncome] = useState(false);
+    // const [_yield, setYield] = useState(0.0);
+
+    const [interestHistory, setInterestHistory] = useState<EarningInfo[]>([]);
     // TODO(dumengrong)
     const supplyAPR = 30;
 
@@ -76,12 +86,24 @@ const EarnPage = () => {
     };
 
     useEffect(() => {
-        getWalletBalance();
+        if (address != undefined) {
+            flushWalletBalance(address, setEzETHBalance);
+            setApyHistory();
+        }
         getWithdrawBalance();
         checkApprove();
-
-
+        // CalcYield();
     }, [change, isConnected]);
+
+    const setApyHistory = async () => {
+        if (address == undefined) {
+            return;
+        }
+        const { totalInterest, datas } = await getApyHistory(address);
+        console.log("Get totalInterest: ", totalInterest);
+        setTotalEarning(totalInterest);
+        setInterestHistory(datas);
+    }
 
     const checkApprove = async () => {
         if (address == undefined) {
@@ -94,23 +116,6 @@ const EarnPage = () => {
             setNeedApprove(true);
         }
     }
-
-    const getWalletBalance = async () => {
-        if (ezETHBalance == null || address == undefined) {
-            return;
-        } else {
-            const result = await readContract(config, {
-                abi: erc20Abi,
-                address: ezETHContractAddress,
-                functionName: 'balanceOf',
-                args: [address]
-            });
-            console.log("wallet balance result:", result);
-
-            setezETHBalance(Number(Number(ethers.formatEther(result)).toFixed(6)));
-        }
-    };
-
 
     const getWithdrawBalance = async () => {
         if (address == undefined) {
@@ -165,12 +170,6 @@ const EarnPage = () => {
 
     // Assuming 'supply' is the default selected tab
 
-
-    // console.log("ethereum: ", window.ethereum.chainId);
-    // const chainId = useChainId({
-    //   config,
-    // })
-    // console.log("chainId: ", chainId);
     if (isConnected) {
         const hexString = window.ethereum.chainId;
         const chainIdBigInt = BigInt(hexString);
@@ -318,13 +317,27 @@ const EarnPage = () => {
         approveToken(address);
     }
 
+    // const CalcYield = async () => {
+    //     if (address == undefined) {
+    //         return;
+    //     }
+    //     const { totalInterest } = await getApyHistory(address);
+    //     if (ezETHBalance != 0) {
+    //         setYield(totalInterest / ezETHBalance);
+    //         console.log(_yield);
+    //     }
+    // }
+
+
     return (
         <EarnContent>
             <Tabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
                 // throw new Error('Function not implemented.');
                 setSelectedTab(tab);
                 getWithdrawBalance();
-                getWalletBalance();
+                if (address != undefined) {
+                    flushWalletBalance(address, setEzETHBalance);
+                }
             }} />
 
 
@@ -344,15 +357,28 @@ const EarnPage = () => {
             </SupplyAmountContainer>
 
             {selectedTab === 'supply' && (
-                <>
-                    <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance : '0'} ezETH</WalletBalance>
-                </>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance.toFixed(6) : '0'} ezETH</WalletBalance>
+                    <WalletBalance>
+                        Earnings: <ClickableText clickable={true} onClick={() => { setIsOpenIncome(true) }}>{TotalEarning.toFixed(6)}</ClickableText> ezETH
+                    </WalletBalance>
+                    {address &&
+                        (
+                            <InterestHistory infos={interestHistory}
+                                isOpen={isOpenIncome}
+                                onClose={() => (setIsOpenIncome(false))} />
+                        )}
+
+                </div>
             )}
             {selectedTab === 'withdraw' && (
-                <>
-                    <WalletBalance>Max Withdraw Amount: {withdrawBalanceShow} ezETH</WalletBalance>
-                </>
-            )}
+                <WalletBalanceWrapper>
+                    <WalletBalance>My Current Balance: {withdrawBalanceShow} </WalletBalance>
+                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                    {/* <WalletBalance style={{ color: "#DC143C" }}> +{formatPercentage(_yield)}</WalletBalance> */}
+                </WalletBalanceWrapper>
+            )
+            }
 
             <h3 style={{ color: '#000000' }}>My Stats</h3>
             <StatsContainer>
@@ -446,6 +472,16 @@ const AmountInput = styled.input`
   &:focus {
     outline: none;
   }
+`;
+
+const WalletBalanceWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    margin-right: 5rem;
+`;
+
+const ETHMiniLogoImage = styled.img`
+  height: 40px;
 `;
 
 export default EarnPage;

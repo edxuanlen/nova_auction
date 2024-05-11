@@ -34,7 +34,7 @@ import './components/EventWatcher';
 
 import { watchContractEvent } from '@wagmi/core'
 
-import { contract, getAllowance } from './utils/contract';
+import { contract, getAllowance, getApyHistory } from './utils/contract';
 
 
 import {
@@ -45,8 +45,10 @@ import {
   ezETHContractAddress,
   useSimulateAuctionContract,
   auctionABI,
-  getLogerWithWalletAddress
+  getLogerWithWalletAddress,
 } from './utils/contract';
+
+import { flushWalletBalance } from './utils/wallet';
 
 // const { connector } = useAccount();
 import {
@@ -58,12 +60,12 @@ import { foundry } from 'viem/chains';
 import EarnPage from './pages/EarnPage';
 import { getBalance } from 'viem/actions';
 import { useNavigate } from 'react-router-dom'; // 导入 useHistory 钩子
-import { WalletBalance } from './styles/styled';
 import { EventInfo } from './types';
 
 const AuctionPage = () => {
   const [lastTradedPrice, setLastTradedPrice] = useState(5);
   const [auctionCountdown, setAuctionCountdown] = useState({ hours: '00', minutes: '00', seconds: '00' });
+  const [countdownType, setCountdownType] = useState('begin');
 
   const [bidQuantity, setBidQuantity] = useState('0');
   const [bidPrice, setBidPrice] = useState('0');
@@ -75,15 +77,22 @@ const AuctionPage = () => {
 
   const { isConnected, address } = useAccount();
 
-  const [amountOfezETH, setAmountOfezETH] = useState(0.0);
+  // const [amountOfezETH, setAmountOfezETH] = useState(0.0);
   const [amountOfEzPoints, setAmountOfEzPoints] = useState(0.0);
   const [amountOfElPoints, setAmountOfElPoints] = useState(0.0);
 
   const [selectedTab, setSelectedTab] = useState('EzPoints');
   const [needApprove, setNeedApprove] = useState(true);
+  const [totalPoints, setTotalPoints] = useState(0);
 
-  const pointsMap = new Map<string, number>();
 
+  const pointsStr2Num = new Map<string, number>();
+  pointsStr2Num.set('ElPoints', 0);
+  pointsStr2Num.set('EzPoints', 1);
+  const pointsNum2Str = new Map<number, string>();
+  pointsNum2Str.set(0, 'ElPoints');
+  pointsNum2Str.set(1, 'EzPoints');
+  const [ezETHBalance, setEzETHBalance] = useState(0);
   const navigate = useNavigate();
 
 
@@ -94,8 +103,6 @@ const AuctionPage = () => {
 
   const [modalText, setModalText] = useState('');
 
-  pointsMap.set('EzPoints', 0);
-  pointsMap.set('ElPoints', 1);
 
   useEffect(() => {
     // 从合约中获取最近成交价格和数量
@@ -104,9 +111,9 @@ const AuctionPage = () => {
     // 从合约中获取拍卖倒计时
     getAuctionCountdown();
 
-    // handleConnectWallet();
-
-    getContractBalance();
+    if (address != undefined) {
+      flushWalletBalance(address, setEzETHBalance);
+    }
 
   }, []);
 
@@ -119,13 +126,26 @@ const AuctionPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [address]);
+  }, [address, selectedTab]);
 
   const fetchData = async () => {
     if (address === undefined || address === null) {
       return;
     }
     const logs = await getLogerWithWalletAddress(address);
+
+    let points = 0;
+    console.log("selectedTab: ", selectedTab);
+    for (let log of logs) {
+      // console.log("log: ", log);
+      if (log.eventType == "Deal" &&
+        pointsNum2Str.has(Number(log.pointType)) &&
+        pointsNum2Str.get(Number(log.pointType)) == selectedTab) {
+        points += Number(ethers.formatEther(log.bidPoints));
+      }
+    }
+    setTotalPoints(points);
+
     setEvents(logs);
 
     const result = await getAllowance(address);
@@ -136,25 +156,8 @@ const AuctionPage = () => {
     }
   };
 
-  const getContractBalance = async () => {
-    if (address === undefined || address === null) {
-      console.log("还没登陆！");
-      return;
-    }
-    const result = await readContract(
-      config, {
-      abi: erc20Abi,
-      address: ezETHContractAddress,
-      functionName: "balanceOf",
-      args: [auctionContractAddress]
-    });
-
-    console.log("read contract balance: ", ethers.formatEther(result));
-    setAmountOfezETH(Number(ethers.formatEther(result)));
-  };
-
   const getAuctionCountdown = async () => {
-    const pointsType = pointsMap.get(selectedTab);
+    const pointsType = pointsStr2Num.get(selectedTab);
     if (pointsType == undefined) {
       return;
     }
@@ -170,7 +173,18 @@ const AuctionPage = () => {
     console.log("read auction bidTrackers: ", startTimeResult);
     const [startTime, duration, pointsToSell, startingPrice, state] = startTimeResult;
 
-    startCountdownTimer(Number(startTime), Number(duration), 5, setAuctionCountdown);
+    console.log("startTime========", startTime);
+    console.log("Now time: ", Math.floor(Date.now() / 1000));
+    const nowSec = Math.floor(Date.now() / 1000);
+
+    if (startTime < nowSec) {
+      startCountdownTimer(Number(startTime), Number(duration), 5, setAuctionCountdown);
+      setCountdownType('end');
+    } else {
+      startCountdownTimer(nowSec, Number(startTime) - nowSec, 5, setAuctionCountdown);
+      setCountdownType('begin');
+    }
+    console.log("setCountdownType: ", countdownType);
     // TOCHECK?
 
     const starting_price = Number(ethers.formatEther(startingPrice));
@@ -250,7 +264,7 @@ const AuctionPage = () => {
     // Implement logic to place a bid
     console.log('Placing bid:', bidQuantity, 'at', bidPrice, 'ETH');
 
-    const pointsType = pointsMap.get(selectedTab);
+    const pointsType = pointsStr2Num.get(selectedTab);
     if (pointsType == undefined) {
       return;
     }
@@ -294,10 +308,7 @@ const AuctionPage = () => {
     })
 
     console.log("transactionReceipt: ", transactionReceipt);
-
-
   };
-
 
   const cancelModal = () => {
     setIsOpen(false);
@@ -343,13 +354,21 @@ const AuctionPage = () => {
             <AuctionContent>
               <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
                 setSelectedTab(tab);
+                setTotalPoints(0);
               }} />
 
-              <LastTradedPriceContainer>
-                <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
-                <LastTradedPriceValue>{lastTradedPrice} </LastTradedPriceValue>
-                <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-              </LastTradedPriceContainer>
+              <PriceInfoContainer>
+                <LastTradedPriceContainer>
+                  <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
+                  <LastTradedPriceValue>{lastTradedPrice}</LastTradedPriceValue>
+                  <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                </LastTradedPriceContainer>
+
+                <LastTradedPriceContainer>
+                  <LastTradedPriceLabel>Total Points Earn:</LastTradedPriceLabel>
+                  <LastTradedPriceValue>{totalPoints}</LastTradedPriceValue>
+                </LastTradedPriceContainer>
+              </PriceInfoContainer>
 
               <AuctionAmountContainer>
                 <AuctionAmountLeft>
@@ -368,7 +387,12 @@ const AuctionPage = () => {
 
               <AuctionCountdownContainer>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <AuctionCountdownLabel>Auction countdown begins:</AuctionCountdownLabel>
+                  {countdownType == 'end' && (
+                    <AuctionCountdownLabel>Auction End Countdown:</AuctionCountdownLabel>
+                  )}
+                  {countdownType == 'begin' && (
+                    <AuctionCountdownLabel>Auction Start Countdown:</AuctionCountdownLabel>
+                  )}
                   <AuctionCountdownValues>
                     <AuctionCountdownValue>
                       <span>{auctionCountdown.hours}</span>
@@ -430,7 +454,10 @@ const AuctionPage = () => {
 
 
               <BidButtonContainer>
-                {(Number(totalPrice) <= amountOfezETH) ?
+                {needApprove && (
+                  <BidButton>Approve ezETH</BidButton>
+                )}
+                {(Number(totalPrice) <= ezETHBalance) ?
                   <BidButton onClick={handleBid}>Bid</BidButton>
                   :
                   <BidButton>Insufficient balance</BidButton>
@@ -520,12 +547,18 @@ const Content = styled.div`
 
 const AuctionContent = Content;
 
-const LastTradedPriceContainer = styled.div`
+const PriceInfoContainer = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 `;
 
+const LastTradedPriceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-right: 5rem;
+`;
 const LastTradedPriceLabel = styled.span`
   font-size: 0.9rem;
   font-weight: bold;
