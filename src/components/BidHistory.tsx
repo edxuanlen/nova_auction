@@ -53,10 +53,11 @@ const StyledTable = styled.table`
 interface BidHistoryProps {
     events: EventInfo[];
     isOpen: boolean;
+    filter: BigInt;
     onClose: () => void;
 }
 
-const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, onClose }) => {
+const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, filter, onClose }) => {
     if (!isOpen) return null;
 
     return (
@@ -80,15 +81,16 @@ const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, onClose }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {events.map((event, index) => (
-                                <tr key={index}>
-                                    <td>{event.eventType}</td>
-                                    <td>{event.pointType === 1n ? 'EzPoints' : 'ElPoints'}</td>
-                                    <td>{ethers.formatEther(event.bidAmount)}</td>
-                                    <td>{ethers.formatEther(event.bidPoints)}</td>
-                                    <td>{event.transactionTime?.toLocaleString() || ''}</td>
-                                </tr>
-                            ))}
+                            {events.filter((event) => Number(event.pointType) === Number(filter))
+                                .map((event, index) => (
+                                    <tr key={index}>
+                                        <td>{event.eventType}</td>
+                                        <td>{event.pointType === 1n ? 'EzPoints' : 'ElPoints'}</td>
+                                        <td>{ethers.formatEther(event.bidAmount)}</td>
+                                        <td>{ethers.formatEther(event.bidPoints)}</td>
+                                        <td>{event.transactionTime?.toLocaleString() || ''}</td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </StyledTable>
                 </PopupContent>

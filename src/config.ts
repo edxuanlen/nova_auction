@@ -44,10 +44,10 @@ export const config = createConfig({
         injected({
             target: 'metaMask',
         }),
-        walletConnect({
-            showQrModal: false,
-            projectId: projectId,
-        }),
+        // walletConnect({
+        //     showQrModal: false,
+        //     projectId: projectId,
+        // }),
         injected({
             target: 'tokenPocket',
         }),

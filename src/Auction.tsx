@@ -27,7 +27,7 @@ import { ethers } from 'ethers';
 
 import { startCountdownTimer } from './utils/time';
 
-import { PointsTabs, CustomModal, BidHistory } from './components';
+import { PointsTabs, CustomModal, BidHistory, LogCollector } from './components';
 import BackendPage from './pages/BackendPage';
 
 import './components/EventWatcher';
@@ -46,6 +46,7 @@ import {
   useSimulateAuctionContract,
   auctionABI,
   getLogerWithWalletAddress,
+  approveToken,
 } from './utils/contract';
 
 import { flushWalletBalance } from './utils/wallet';
@@ -76,6 +77,7 @@ const AuctionPage = () => {
   const [pointsToSell, setPointsToSell] = useState(0);
 
   const { isConnected, address } = useAccount();
+  const [isPending, setIsPending] = useState(false);
 
   // const [amountOfezETH, setAmountOfezETH] = useState(0.0);
   const [amountOfEzPoints, setAmountOfEzPoints] = useState(0.0);
@@ -83,6 +85,7 @@ const AuctionPage = () => {
 
   const [selectedTab, setSelectedTab] = useState('EzPoints');
   const [needApprove, setNeedApprove] = useState(true);
+  const [showLastSubmit, setShowLastSubmit] = useState(false);
   const [totalPoints, setTotalPoints] = useState(0);
 
 
@@ -93,9 +96,6 @@ const AuctionPage = () => {
   pointsNum2Str.set(0, 'ElPoints');
   pointsNum2Str.set(1, 'EzPoints');
   const [ezETHBalance, setEzETHBalance] = useState(0);
-  const navigate = useNavigate();
-
-
 
   // 弹窗
   const [isOpen, setIsOpen] = useState(false);
@@ -149,7 +149,8 @@ const AuctionPage = () => {
     setEvents(logs);
 
     const result = await getAllowance(address);
-    if (result === '0') {
+    if (Number(result) === 0) {
+      console.log("Number result", Number(result))
       setNeedApprove(true);
     } else {
       setNeedApprove(false);
@@ -172,16 +173,18 @@ const AuctionPage = () => {
     });
     console.log("read auction bidTrackers: ", startTimeResult);
     const [startTime, duration, pointsToSell, startingPrice, state] = startTimeResult;
-
-    console.log("startTime========", startTime);
-    console.log("Now time: ", Math.floor(Date.now() / 1000));
+    console.log("startTimeResult: ", startTimeResult);
     const nowSec = Math.floor(Date.now() / 1000);
 
+    if (nowSec > startTime + duration) {
+      return;
+    }
+
     if (startTime < nowSec) {
-      startCountdownTimer(Number(startTime), Number(duration), 5, setAuctionCountdown);
+      startCountdownTimer(Number(startTime), Number(duration), 1, setAuctionCountdown, getAuctionCountdown);
       setCountdownType('end');
     } else {
-      startCountdownTimer(nowSec, Number(startTime) - nowSec, 5, setAuctionCountdown);
+      startCountdownTimer(nowSec, Number(startTime) - nowSec, 1, setAuctionCountdown, getAuctionCountdown);
       setCountdownType('begin');
     }
     console.log("setCountdownType: ", countdownType);
@@ -227,9 +230,10 @@ const AuctionPage = () => {
   };
 
   const handleBid = async () => {
-
+    setIsPending(true);
     if (!isConnected) {
       console.log('Wallet not connected');
+      setIsPending(false);
       return;
     }
 
@@ -237,6 +241,7 @@ const AuctionPage = () => {
       console.log('Bid price and quantity must be greater than 0');
       setModalText('Bid price and quantity must be greater than 0');
       setIsOpen(true);
+      setIsPending(false);
       return;
     }
 
@@ -248,6 +253,7 @@ const AuctionPage = () => {
       setModalText(`Bid price must be greater than starting price.
           BidPrice: ${bidPrice}  Starting price: ${startingPrice.toFixed(4)}`);
       setIsOpen(true);
+      setIsPending(false);
 
       return;
     }
@@ -258,6 +264,7 @@ const AuctionPage = () => {
       console.log('Points to sell:', pointsToSell);
       setModalText(`Exceeding the auction supply`);
       setIsOpen(true);
+      setIsPending(false);
       return;
     }
 
@@ -266,6 +273,7 @@ const AuctionPage = () => {
 
     const pointsType = pointsStr2Num.get(selectedTab);
     if (pointsType == undefined) {
+      setIsPending(false);
       return;
     }
 
@@ -308,6 +316,10 @@ const AuctionPage = () => {
     })
 
     console.log("transactionReceipt: ", transactionReceipt);
+    setIsPending(false);
+    fetchData();
+
+    showLastSubmit(true);
   };
 
   const cancelModal = () => {
@@ -318,163 +330,192 @@ const AuctionPage = () => {
     setIsOpen(false);
   }
 
-  const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
+  const checkApprove = async () => {
+    if (address == undefined) {
+      return;
+    }
+    const res = await getAllowance(address);
+    if (Number(res) != 0) {
+      setNeedApprove(false);
+    } else {
+      setNeedApprove(true);
+    }
+  }
+
+  const onApprove = async () => {
+    if (address == undefined) {
+      console.log("还没登陆！");
+      return;
+    }
+    await approveToken(address);
+    checkApprove();
+  }
+
+  // const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
 
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-
-        <Container>
-          <Header>
-            <LogoLink href="/">
-              <LogoImage src={logo} alt="Logo" />
-            </LogoLink>
-            <TabContainer>
-              <Tab
-                active={activeTab === 'earn' ? 'true' : 'false'}
-                onClick={() => setActiveTab('earn')}>
-                Earn
-              </Tab>
-              <Tab
-                active={activeTab === 'auction' ? 'true' : 'false'}
-                onClick={() => setActiveTab('auction')}>
-                Auction
-              </Tab>
-            </TabContainer>
-            <WalletOptionsButton />
-            {isAdmin &&
+    <Container>
+      <Header>
+        <LogoLink href="/">
+          <LogoImage src={logo} alt="Logo" />
+        </LogoLink>
+        <TabContainer>
+          <Tab
+            active={activeTab === 'earn' ? 'true' : 'false'}
+            onClick={() => setActiveTab('earn')}>
+            Earn
+          </Tab>
+          <Tab
+            active={activeTab === 'auction' ? 'true' : 'false'}
+            onClick={() => setActiveTab('auction')}>
+            Auction
+          </Tab>
+        </TabContainer>
+        <WalletOptionsButton />
+        {/* {isAdmin &&
               (<BidHistoryButton onClick={() => (navigate("/admin"))}>Go to Backend</BidHistoryButton>)
+            } */}
+
+      </Header>
+      {activeTab === 'earn' && (
+        <EarnPage />
+      )}
+      {activeTab === 'auction' && (
+        <AuctionContent>
+          <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
+            setSelectedTab(tab);
+            setTotalPoints(0);
+          }} />
+
+          <PriceInfoContainer>
+            <LastTradedPriceContainer>
+              <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
+              <LastTradedPriceValue>{lastTradedPrice}</LastTradedPriceValue>
+              <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+            </LastTradedPriceContainer>
+
+            <LastTradedPriceContainer>
+              <LastTradedPriceLabel>Total Points Earn:</LastTradedPriceLabel>
+              <LastTradedPriceValue>{totalPoints}</LastTradedPriceValue>
+            </LastTradedPriceContainer>
+          </PriceInfoContainer>
+
+          <AuctionAmountContainer>
+            <AuctionAmountLeft>
+              {selectedTab == 'EzPoints' ?
+                <ETHLogoImage src={RenzoLogo} alt='RenzoLogo' />
+                : <ETHLogoImage src={EigenLayerLogo} alt='EigenLayerLogo' />
+              }
+              <ETHLogoText>Points</ETHLogoText>
+              {/* <ETHLogoImage src={ETHLogo} alt="MiniEthLogo" /> */}
+            </AuctionAmountLeft>
+            <AuctionAmountRight>
+              {/* TODO: amount of points */}
+              Total Supply Amount: {selectedTab == 'EzPoints' ? amountOfEzPoints : amountOfElPoints}
+            </AuctionAmountRight>
+          </AuctionAmountContainer>
+
+          <AuctionCountdownContainer>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+              {countdownType == 'end' && (
+                <AuctionCountdownLabel>Auction End Countdown:</AuctionCountdownLabel>
+              )}
+              {countdownType == 'begin' && (
+                <AuctionCountdownLabel>Auction Start Countdown:</AuctionCountdownLabel>
+              )}
+              <AuctionCountdownValues>
+                <AuctionCountdownValue>
+                  <span>{auctionCountdown.hours}</span>
+                </AuctionCountdownValue>
+                <AuctionCountdownSign> : </AuctionCountdownSign>
+                <AuctionCountdownValue>
+                  <span>{auctionCountdown.minutes}</span>
+                </AuctionCountdownValue>
+                <AuctionCountdownSign>  :  </AuctionCountdownSign>
+                <AuctionCountdownValue>
+                  <span>{auctionCountdown.seconds}</span>
+                </AuctionCountdownValue>
+              </AuctionCountdownValues>
+            </div>
+
+            <BidHistoryButton onClick={() => setIsOpenBidHistory(true)}>My Bid History<ArrowIcon /></BidHistoryButton>
+            {address && events &&
+              (
+                <BidHistory events={events}
+                  isOpen={isOpenBidHistory}
+                  filter={pointsStr2Num.has(selectedTab) ? pointsStr2Num.get(selectedTab) : 0n}
+                  onClose={() => (setIsOpenBidHistory(false))} />
+              )}
+
+          </AuctionCountdownContainer>
+
+          <BidContainer>
+            <BidInputContainer>
+
+              <BidInputItem>
+                <BidLabel>Bidding Quantity:</BidLabel>
+                <BidQuantityInput
+                  // type="number"
+                  value={bidQuantity}
+                  onChange={handleBidQuantityChange}
+                />
+              </BidInputItem>
+              <BidInputItem>
+
+
+                <BidLabel>Bidding Price:</BidLabel>
+                <BidPriceInput
+                  // type="number"
+                  value={bidPrice}
+                  onChange={handleBidPriceChange}
+                />
+                <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+              </BidInputItem>
+            </BidInputContainer>
+            <TotalPriceContainer>
+              <TotalPriceKey>
+                Total Price:
+              </TotalPriceKey>
+              <TotalPriceValue>
+                {totalPrice} ezETH
+                <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+              </TotalPriceValue>
+            </TotalPriceContainer>
+          </BidContainer>
+
+
+          <BidButtonContainer>
+
+            {needApprove && (
+              <BidButton onClick={onApprove} >Approve ezETH</BidButton>
+            )}
+            {!needApprove && ((Number(totalPrice) <= ezETHBalance) ?
+              <BidButton onClick={handleBid} disabled={isPending}>Bid</BidButton>
+              :
+              <BidButton>Insufficient balance</BidButton>)
             }
 
-          </Header>
-          {activeTab === 'earn' && (
-            <EarnPage />
-          )}
-          {activeTab === 'auction' && (
-            <AuctionContent>
-              <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
-                setSelectedTab(tab);
-                setTotalPoints(0);
-              }} />
+            {!showLastSubmit && (
+              <tr>
+              </tr>
+              // <td style={{ color: 'black' }}> {selectedTab} </td>
+              // <td>{}</td>
+              // <td>{ethers.formatEther(event.bidAmount)}</td>
+              // <td>{ethers.formatEther(event.bidPoints)}</td>
+              // <td>{event.transactionTime?.toLocaleString() || ''}</td>
+            )}
 
-              <PriceInfoContainer>
-                <LastTradedPriceContainer>
-                  <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
-                  <LastTradedPriceValue>{lastTradedPrice}</LastTradedPriceValue>
-                  <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                </LastTradedPriceContainer>
-
-                <LastTradedPriceContainer>
-                  <LastTradedPriceLabel>Total Points Earn:</LastTradedPriceLabel>
-                  <LastTradedPriceValue>{totalPoints}</LastTradedPriceValue>
-                </LastTradedPriceContainer>
-              </PriceInfoContainer>
-
-              <AuctionAmountContainer>
-                <AuctionAmountLeft>
-                  {selectedTab == 'EzPoints' ?
-                    <ETHLogoImage src={RenzoLogo} alt='RenzoLogo' />
-                    : <ETHLogoImage src={EigenLayerLogo} alt='EigenLayerLogo' />
-                  }
-                  <ETHLogoText>Points</ETHLogoText>
-                  {/* <ETHLogoImage src={ETHLogo} alt="MiniEthLogo" /> */}
-                </AuctionAmountLeft>
-                <AuctionAmountRight>
-                  {/* TODO: amount of points */}
-                  Total Supply Amount: {selectedTab == 'EzPoints' ? amountOfEzPoints : amountOfElPoints}
-                </AuctionAmountRight>
-              </AuctionAmountContainer>
-
-              <AuctionCountdownContainer>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  {countdownType == 'end' && (
-                    <AuctionCountdownLabel>Auction End Countdown:</AuctionCountdownLabel>
-                  )}
-                  {countdownType == 'begin' && (
-                    <AuctionCountdownLabel>Auction Start Countdown:</AuctionCountdownLabel>
-                  )}
-                  <AuctionCountdownValues>
-                    <AuctionCountdownValue>
-                      <span>{auctionCountdown.hours}</span>
-                    </AuctionCountdownValue>
-                    <AuctionCountdownSign> : </AuctionCountdownSign>
-                    <AuctionCountdownValue>
-                      <span>{auctionCountdown.minutes}</span>
-                    </AuctionCountdownValue>
-                    <AuctionCountdownSign>  :  </AuctionCountdownSign>
-                    <AuctionCountdownValue>
-                      <span>{auctionCountdown.seconds}</span>
-                    </AuctionCountdownValue>
-                  </AuctionCountdownValues>
-                </div>
-
-                <BidHistoryButton onClick={() => setIsOpenBidHistory(true)}>My Bid History<ArrowIcon /></BidHistoryButton>
-                {address && events &&
-                  (
-                    <BidHistory events={events}
-                      isOpen={isOpenBidHistory}
-                      onClose={() => (setIsOpenBidHistory(false))} />
-                  )}
-
-              </AuctionCountdownContainer>
-
-              <BidContainer>
-                <BidInputContainer>
-
-                  <BidInputItem>
-                    <BidLabel>Bidding Quantity:</BidLabel>
-                    <BidQuantityInput
-                      // type="number"
-                      value={bidQuantity}
-                      onChange={handleBidQuantityChange}
-                    />
-                  </BidInputItem>
-                  <BidInputItem>
-
-
-                    <BidLabel>Bidding Price:</BidLabel>
-                    <BidPriceInput
-                      // type="number"
-                      value={bidPrice}
-                      onChange={handleBidPriceChange}
-                    />
-                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                  </BidInputItem>
-                </BidInputContainer>
-                <TotalPriceContainer>
-                  <TotalPriceKey>
-                    Total Price:
-                  </TotalPriceKey>
-                  <TotalPriceValue>
-                    {totalPrice} ezETH
-                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                  </TotalPriceValue>
-                </TotalPriceContainer>
-              </BidContainer>
-
-
-              <BidButtonContainer>
-                {needApprove && (
-                  <BidButton>Approve ezETH</BidButton>
-                )}
-                {(Number(totalPrice) <= ezETHBalance) ?
-                  <BidButton onClick={handleBid}>Bid</BidButton>
-                  :
-                  <BidButton>Insufficient balance</BidButton>
-                }
-                <CustomModal
-                  onCancel={cancelModal}
-                  open={isOpen}
-                  onOk={handleOKModal}
-                  modalText={modalText} />
-              </BidButtonContainer>
-            </AuctionContent>
-          )
-          }
-        </Container >
-
-      </QueryClientProvider>
-    </WagmiProvider >
+            <CustomModal
+              onCancel={cancelModal}
+              open={isOpen}
+              onOk={handleOKModal}
+              modalText={modalText} />
+          </BidButtonContainer>
+        </AuctionContent>
+      )
+      }
+      <LogCollector />
+    </Container >
   );
 };
 

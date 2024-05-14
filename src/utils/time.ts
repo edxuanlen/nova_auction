@@ -2,7 +2,8 @@ export function startCountdownTimer(
     startTime: number,
     duration: number,
     updateInterval: number,
-    setCountdown: React.Dispatch<React.SetStateAction<{ hours: string, minutes: string, seconds: string }>>
+    setCountdown: React.Dispatch<React.SetStateAction<{ hours: string, minutes: string, seconds: string }>>,
+    onCountdownEnd: () => void
 ): void {
     const timer = setInterval(() => {
         const currentTime = Math.floor(Date.now() / 1000);
@@ -11,6 +12,7 @@ export function startCountdownTimer(
         if (remainingSeconds <= 0) {
             clearInterval(timer);
             setCountdown({ hours: '00', minutes: '00', seconds: '00' });
+            onCountdownEnd();
             return;
         }
 

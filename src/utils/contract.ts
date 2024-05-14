@@ -38,7 +38,6 @@ const topicDividend = ethers.id("Dividend(uint256,uint256)");
 
 export const getBlockTime = async (blockNumber: number) => {
     const block = await provider.getBlock(blockNumber);
-    console.log("block +++++++++++:", block?.timestamp);
     if (!block) {
         return undefined;
     }
@@ -61,7 +60,11 @@ export const getApyHistory = async (walletAddress: Address) => {
         // const
         // walletAddress
         const balance = await getEzETHBalance(walletAddress, BigInt(log.blockNumber));
+        if (balance == 0) {
+            continue;
+        }
         const data = ethers.AbiCoder.defaultAbiCoder().decode(["uint256", "uint256"], log.data);
+
         let apy = 0;
         let daylyInterest = 0;
         if (data[0] != 0) {
@@ -255,6 +258,7 @@ export async function getAllowance(address: Address) {
         functionName: 'allowance',
         args: [address, auctionContractAddress],
     });
+    console.log("allowance: ", result);
 
     return ethers.formatEther(result);
 }

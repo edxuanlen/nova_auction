@@ -44,8 +44,6 @@ import { formatPercentage } from '../utils/math';
 
 
 const EarnPage = () => {
-
-
     const [selectedTab, setSelectedTab] = useState('supply');
 
     const [amount, setAmount] = useState(0);
@@ -60,6 +58,7 @@ const EarnPage = () => {
     const [change, setChange] = useState(true);
     const [needApprove, setNeedApprove] = useState(false);
     const [isOpenIncome, setIsOpenIncome] = useState(false);
+    const [isPending, setIsPending] = useState(false);
     // const [_yield, setYield] = useState(0.0);
 
     const [interestHistory, setInterestHistory] = useState<EarningInfo[]>([]);
@@ -110,7 +109,7 @@ const EarnPage = () => {
             return;
         }
         const res = await getAllowance(address);
-        if (res != '0') {
+        if (Number(res) != 0) {
             setNeedApprove(false);
         } else {
             setNeedApprove(true);
@@ -189,24 +188,29 @@ const EarnPage = () => {
 
 
     const onSupply = async () => {
+        setIsPending(true);
         console.log("onSupply: ", amount);
         if (isNaN(amount) || !isFinite(amount)) {
             console.log("金额违法！");
+            setIsPending(false);
             return;
         }
 
         if (address == undefined) {
             console.log("还没登陆！");
+            setIsPending(false);
             return;
         }
 
         if (amount > ezETHBalance) {
             console.log("你没钱啦: ", ezETHBalance, amount);
+            setIsPending(false);
             return;
         }
 
         if (amount === 0) {
             console.log("钱不能是空哒！", ezETHBalance, amount);
+            setIsPending(false);
             return;
         }
 
@@ -241,27 +245,33 @@ const EarnPage = () => {
 
         console.log("transactionReceipt: ", transactionReceipt);
         setChange(!change);
+        setIsPending(false);
     }
 
     const onWithdraw = async () => {
+        setIsPending(true);
         console.log("onWithdraw: ", amount);
         if (isNaN(amount) || !isFinite(amount)) {
             console.log("金额违法！");
+            setIsPending(false);
             return;
         }
 
         if (address == undefined) {
             console.log("还没登陆！");
+            setIsPending(false);
             return;
         }
 
         if (amount > withdrawBalance) {
             console.log("你没钱啦: ", withdrawBalance, amount);
+            setIsPending(false);
             return;
         }
 
         if (amount === 0) {
             console.log("钱不能是空哒！", withdrawBalance, amount);
+            setIsPending(false);
             return;
         }
 
@@ -306,15 +316,19 @@ const EarnPage = () => {
 
 
         setChange(!change);
+        setIsPending(false);
     }
 
     const onApprove = async () => {
+        setIsPending(true);
         if (address == undefined) {
             console.log("还没登陆！");
+            setIsPending(false);
             return;
         }
-        console.log("onApprove allowance.");
-        approveToken(address);
+        await approveToken(address);
+        checkApprove();
+        setIsPending(false);
     }
 
     // const CalcYield = async () => {
@@ -393,23 +407,21 @@ const EarnPage = () => {
             </StatsContainer>
             <BidButtonContainer>
                 {needApprove && (
-                    <BidButton
-                        onClick={onApprove}
-                    >
-                        'Approve ezETH'
+                    <BidButton onClick={onApprove} >
+                        Approve ezETH
                     </BidButton>
                 )}
-                {!needApprove && isConnected ? (
+                {!needApprove && (isConnected ? (
                     <BidButton
                         onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
-                        disabled={selectedTab === 'withdraw' ? amount > withdrawBalance : false}
+                        disabled={selectedTab === 'withdraw' ? amount > withdrawBalance : false || isPending}
                         style={{ backgroundColor: !(selectedTab === 'withdraw' ? amount <= withdrawBalance : true) ? '#ccc' : '', cursor: !(selectedTab === 'withdraw' ? amount <= withdrawBalance : true) ? 'not-allowed' : '' }}
                     >
                         {selectedTab === 'supply' ? 'Supply' : 'Withdraw'}
                     </BidButton>
                 ) : (
                     <WalletOptionsButton />
-                )}
+                ))}
             </BidButtonContainer>
         </EarnContent >
     );
