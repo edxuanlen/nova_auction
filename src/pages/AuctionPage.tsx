@@ -116,16 +116,19 @@ const AuctionPage = () => {
             const logs = await getLogerWithWalletAddress(address);
 
             let points = 0;
+            let lastPrice = 0;
             let typeFilterLogs: (EventInfo)[] = [];
             for (let log of logs) {
                 if (pointsNum2Str.get(Number(log.pointType)) == selectedTab) {
                     typeFilterLogs.push(log);
                     if (log.eventType == "Deal" && pointsNum2Str.has(Number(log.pointType))) {
                         points += Number(ethers.formatEther(log.bidPoints));
-                        setLastTradedPrice(Number(ethers.formatEther(log.bidPrice)));
+                        lastPrice = Number(ethers.formatEther(log.bidPrice));
                     }
                 }
             }
+
+            setLastTradedPrice(lastPrice);
 
             const lastEvent = typeFilterLogs[typeFilterLogs.length - 1];
             if (lastEvent && lastEvent.eventType == "Charge") {

@@ -9,6 +9,6 @@ export default defineConfig(({ mode }) => {
         //     port: 3000,
         //     open: true
         // }
-        // base: mode === 'prod' ? '/dist/auction' : '/',
+        // base: mode === 'prod' ? '/dist/' : '/',
     }
 });
