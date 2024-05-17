@@ -49,7 +49,7 @@ const App: React.FC = () => {
                     group: 'More',
                 }),
             ]}
-            chains={import.meta.env.VITE_ENVIRONMENT === 'depolia' ? [arbitrumSepolia] : [arbitrum]}
+            chains={import.meta.env.VITE_ENVIRONMENT === 'sepolia' ? [arbitrumSepolia] : [arbitrum]}
             config={config}
         >
             <Connector>

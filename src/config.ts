@@ -17,7 +17,7 @@ export const TokenContractAddress = import.meta.env.VITE_TOKEN_CONTRACT_ADDRESS;
 
 
 export const config = createConfig({
-    chains: import.meta.env.VITE_ENVIRONMENT === 'depolia' ? [arbitrumSepolia] : [arbitrum],
+    chains: import.meta.env.VITE_ENVIRONMENT === 'sepolia' ? [arbitrumSepolia] : [arbitrum],
     transports: {
         [mainnet.id]: http(),
         [arbitrumSepolia.id]: http(),
