@@ -1,0 +1,45 @@
+{
+  "name": "nova_auction",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --mode local",
+    "sepolia": "vite --host 0.0.0.0 --mode sepolia",
+    "prod": "vite build --mode prod",
+    "build": "tsc && vite build",
+    "lint": "biome check .",
+    "preview": "vite preview --host 0.0.0.0 --port 5173"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.0.5",
+    "connectkit": "^1.7.3",
+    "import-sort-cli": "^6.0.0",
+    "import-sort-parser-babylon": "^6.0.0",
+    "import-sort-style-module": "^6.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "viem": "^2.9.23",
+    "wagmi": "^2.5.20"
+  },
+  "devDependencies": {
+    "@ant-design/web3": "^1.10.0",
+    "@ant-design/web3-wagmi": "^2.4.2",
+    "@biomejs/biome": "^1.1.2",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.1.0",
+    "@wagmi/cli": "latest",
+    "antd": "^5.16.2",
+    "axios": "^1.6.8",
+    "buffer": "^6.0.3",
+    "json-bigint": "^1.0.0",
+    "react-paginate": "^8.2.0",
+    "react-router-dom": "^6.23.0",
+    "styled-components": "^6.1.9",
+    "typechain": "^8.3.2",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9"
+  }
+}
