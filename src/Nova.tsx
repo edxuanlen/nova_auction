@@ -15,6 +15,7 @@ import { BrowserRouter as Router, Route, Link, Routes, Navigate, useNavigate } f
 // import { contract, ezContract, tokenContract } from './utils/contract';
 
 import EarnPage from './pages/EarnPage';
+import DocsPage from './pages/DocsPage';
 import AuctionPage from './pages/AuctionPage';
 
 import { useAccountEffect } from 'wagmi'
@@ -22,7 +23,7 @@ import { clearDB } from './utils/contract';
 
 const NovaPage = () => {
 
-  const [activeTab, setActiveTab] = useState('earn');
+  const [activeTab, setActiveTab] = useState('docs');
 
   // const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
 
@@ -32,7 +33,7 @@ const NovaPage = () => {
     // let selectedTab = getSelectedTab();
 
     const pathname = location.pathname.split('/')[1];
-    if (pathname === 'earn' || pathname === 'auction') {
+    if (pathname === 'earn' || pathname === 'auction' || pathname === 'docs') {
       setActiveTab(pathname);
     } else {
       setActiveTab('earn');
@@ -55,6 +56,14 @@ const NovaPage = () => {
           <LogoImage src={logo} alt="Logo" />
         </LogoLink>
         <TabContainer>
+          <Tab
+            active={activeTab === 'docs' ? 'true' : 'false'}
+            onClick={() => {
+              setActiveTab('docs');
+              navigate('/docs');
+            }}>
+            Docs
+          </Tab>
           <Tab
             active={activeTab === 'earn' ? 'true' : 'false'}
             onClick={() => {
@@ -81,13 +90,17 @@ const NovaPage = () => {
       </Header>
 
       <Routes>
-        <Route path="/" element={<Navigate to="/earn" replace />} />
+
+        <Route path="/" element={<Navigate to="/docs" replace />} />
+        <Route path="" element={<Navigate to="/docs" replace />} />
         {/* <Route path="/earn" Component={EarnPage} />
         <Route path="/auction" Component={AuctionPage} /> */}
 
+        {activeTab === 'docs' && (
+          <Route path="/docs" Component={DocsPage} />
+        )}
         {activeTab === 'earn' && (
           <Route path="/earn" Component={EarnPage} />
-          // <EarnPage />
         )}
         {activeTab === 'auction' && (
           <Route path="/auction" Component={AuctionPage} />
