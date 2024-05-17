@@ -13,7 +13,7 @@ import {
 } from '@ant-design/web3-wagmi';
 
 import { config } from '../config';
-import { foundry, polygon, mainnet, localhost, arbitrumSepolia } from 'wagmi/chains';
+import { foundry, polygon, mainnet, localhost, arbitrumSepolia, arbitrum } from 'wagmi/chains';
 
 
 const App: React.FC = () => {
@@ -49,9 +49,8 @@ const App: React.FC = () => {
                     group: 'More',
                 }),
             ]}
-            chains={[arbitrumSepolia]}
+            chains={import.meta.env.VITE_ENVIRONMENT === 'depolia' ? [arbitrumSepolia] : [arbitrum]}
             config={config}
-        // // 打开可以选择链，但目前自动给切链了，先关了
         >
             <Connector>
                 <ConnectButton style={{ marginRight: '12%', color: '#000000', background: '#4caf50' }} />

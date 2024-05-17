@@ -1,6 +1,6 @@
 import { QRCode } from 'antd';
 import { http, createConfig } from 'wagmi'
-import { hardhat, localhost, mainnet, polygon, foundry, type Chain, arbitrumSepolia } from 'wagmi/chains';
+import { hardhat, localhost, mainnet, polygon, foundry, type Chain, arbitrumSepolia, arbitrum } from 'wagmi/chains';
 import { injected, safe, walletConnect, coinbaseWallet } from 'wagmi/connectors'
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID;
@@ -17,10 +17,11 @@ export const TokenContractAddress = import.meta.env.VITE_TOKEN_CONTRACT_ADDRESS;
 
 
 export const config = createConfig({
-    chains: [arbitrumSepolia],
+    chains: import.meta.env.VITE_ENVIRONMENT === 'depolia' ? [arbitrumSepolia] : [arbitrum],
     transports: {
         [mainnet.id]: http(),
         [arbitrumSepolia.id]: http(),
+        [arbitrum.id]: http(),
         // [foundry.id]: http('http://10.227.60.68:8545/'),
     },
     connectors: [
