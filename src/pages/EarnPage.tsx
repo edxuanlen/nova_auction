@@ -119,9 +119,9 @@ const EarnPage = () => {
         if (address == undefined) {
             return;
         }
-        const { totalInterest, datas } = await getApyHistory(address);
-        console.log("Get totalInterest: ", totalInterest);
+        const { totalInterest, earningInfos: datas } = await getApyHistory(address);
         setTotalEarning(totalInterest);
+
         setInterestHistory(datas);
     }
 

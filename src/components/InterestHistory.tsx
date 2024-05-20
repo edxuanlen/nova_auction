@@ -15,20 +15,24 @@ const itemsPerPage = 10; // Number of items to display per page
 const InterestHistory: React.FC<InterestHistoryProps> = ({ infos, isOpen, onClose }) => {
     if (!isOpen) return null;
 
-
     const [currentPage, setCurrentPage] = useState(0);
 
     // 计算总页数
-    const pageCount = Math.ceil(infos.length / itemsPerPage);
+    let currentPageData = [];
+    let handlePageClick;
+    let pageCount = 0;
+    if (infos != undefined) {
+        pageCount = Math.ceil(infos.length / itemsPerPage);
 
-    // 获取当前页的数据
-    const offset = currentPage * itemsPerPage;
-    const currentPageData = infos.slice(offset, offset + itemsPerPage);
+        // 获取当前页的数据
+        const offset = currentPage * itemsPerPage;
+        currentPageData = infos.slice(offset, offset + itemsPerPage);
 
-    // 处理页码变化
-    const handlePageClick = ({ selected }) => {
-        setCurrentPage(selected);
-    };
+        // 处理页码变化
+        handlePageClick = ({ selected }) => {
+            setCurrentPage(selected);
+        };
+    }
 
     const popupRef = useRef(null);
 
@@ -40,7 +44,7 @@ const InterestHistory: React.FC<InterestHistoryProps> = ({ infos, isOpen, onClos
 
     return (
         <PopupOverlay onClick={handleOverlayClick}>
-            {infos.length === 0 ? (
+            {infos == undefined || infos.length === 0 ? (
                 <PopupContent ref={popupRef}>
                     <h2>Earning Record</h2>
                     <p>Not Found any record</p>

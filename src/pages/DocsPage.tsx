@@ -9,19 +9,41 @@ import Markdown from 'react-markdown';
 import * as remark from 'remark';
 import fs from 'fs';
 
+import { marked as markedParser } from 'marked';
 
-import remarkGfm from 'remark-gfm';
+const MarkdownComponent = ({ markdownText }: { markdownText: string }) => {
+    const renderer = new markedParser.Renderer();
 
-// declare module '*.md';
-// import Introduction from '../docs/1.md';
-// import NovaEarn from '../docs/3.md';
-// import NovaAuction from '../docs/4.md';
+    // 原始的图片渲染函数
+    const originalRendererImage = renderer.image;
+    renderer.image = (href, title, text) => {
+        // 可以在这里修改href，例如加上基础路径
+        href = `${href}`;
+        return originalRendererImage.call(renderer, href, title, text);
+    };
 
-// const docsMap = new Map<string, string>([
-//   ['1', Introduction],
-//   ['3', NovaEarn],
-//   ['4', NovaAuction],
-// ]);
+    markedParser.setOptions({
+        renderer
+    });
+
+    const getMarkdownText = () => {
+        const rawMarkup = markedParser(markdownText);
+        return { __html: rawMarkup };
+    };
+
+    return <div
+        dangerouslySetInnerHTML={getMarkdownText()}
+        style={{ marginLeft: '10rem', color: '#000', width: '60%' }}
+    />;
+};
+
+import { NovaEarnMD, IntroductionMD, NovaAuctionMD } from '../docs/init';
+
+const docsMap = new Map<string, any>([
+    ['1', IntroductionMD],
+    ['3', NovaEarnMD],
+    ['4', NovaAuctionMD],
+]);
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -44,86 +66,36 @@ const DocsPageContainer = styled.div`
 
 const SidebarContainer = styled.div`
   width: 250px;
-  background: #f0f0f0;
+  background: #ffffff;
   padding: 20px;
-  height: 20%;
+  height: 30%;
 `;
-
-// const processor = remark().use(remarkGfm);
 
 
 const DocsPage = () => {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
 
-  const [selectedTab, setSelectedTab] = React.useState('1');
-  const [content, setContent] = React.useState('');
+    const [content, setContent] = React.useState(IntroductionMD);
 
 
-  return (
-    <DocsPageContainer>
-      <SidebarContainer>
-        {/* <SearchBox /> */}
-        <Sidebar selectedHandler={function (tab: string): void {
-          console.log("tab: ", tab);
-          setSelectedTab(tab);
+    return (
+        <DocsPageContainer>
+            <SidebarContainer>
+                <Sidebar selectedHandler={function (tab: string): void {
+                    console.log("tab: ", tab);
+                    setContent(docsMap.get(tab));
+                }} />
+            </SidebarContainer>
 
-          const filename = 'http://localhost:8000/' + selectedTab + '.md';
-
-          fetch(filename).then((response) => response.text()).then((text) => {
-            setContent(text);
-          })
-
-        }} />
-      </SidebarContainer>
-      {/* <Main>
-        <Routes>
-          <Route path="/:section/:page" element={<Content />} />
-          <Route path="*" element={<Content />} />
-        </Routes>
-      </Main> */}
-
-
-      <Layout style={{}}>
-        {/* <Header style={{ padding: 0, background: colorBgContainer }} /> */}
-        <Content style={{ overflow: 'initial' }}>
-          <div
-            style={{
-              padding: 24,
-              textAlign: 'center',
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-
-            <Markdown
-              className="markdown"
-              remarkPlugins={[remarkGfm]}
-            // children={selectedTab}
-            >
-              {content}
-
-
-            </Markdown>
-
-            {/* <p>long content</p>
-            {
-              Array.from({ length: 100 }, (_, index) => (
-                <React.Fragment key={index}>
-                  {index % 20 === 0 && index ? 'more' : '...'}
-                  <br />
-                </React.Fragment>
-              ))
-            } */}
-          </div>
-        </Content>
-        {/* <Footer style={{ textAlign: 'center' }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer> */}
-      </Layout>
-    </DocsPageContainer>
-  );
+            <Layout style={{ backgroundColor: '#ffffff', width: '60%' }}>
+                <MarkdownComponent
+                    markdownText={content}
+                ></MarkdownComponent>
+                <Footer style={{ textAlign: 'center', backgroundColor: "#ffffff", width: '80%' }}>
+                    Nova Auction ©2024 Created by
+                </Footer>
+            </Layout>
+        </DocsPageContainer >
+    );
 };
 
 export default DocsPage;

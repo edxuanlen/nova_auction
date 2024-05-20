@@ -3,7 +3,7 @@ import socketserver
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', 'http://localhost:5173')
+        self.send_header('Access-Control-Allow-Origin', 'http://10.227.70.105:5173')
         self.send_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
         super().end_headers()
 

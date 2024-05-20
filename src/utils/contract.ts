@@ -93,6 +93,7 @@ export const clearDB = async () => {
     });
 }
 
+const MinBlanace: number = 1e-6;
 
 export const getApyHistory = async (walletAddress: Address) => {
     const dbHelper = new IndexedDBHelper("BlockchainData", IndexedDBHelper.ApyHistory);
@@ -120,11 +121,17 @@ export const getApyHistory = async (walletAddress: Address) => {
     });
 
     let totalInterest = 0;
+
+    for (let earningInfo of earningInfos) {
+        totalInterest += earningInfo.EarnAmount;
+    }
+
     for (let log of logs) {
         // const
         // walletAddress
         const balance = await getEzETHBalance(walletAddress, BigInt(log.blockNumber));
-        if (balance == 0) {
+        console.log("Balance: ", balance);
+        if (balance <= MinBlanace) {
             continue;
         }
         const data = ethers.AbiCoder.defaultAbiCoder().decode(["uint256", "uint256"], log.data);
