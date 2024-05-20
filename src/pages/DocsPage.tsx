@@ -41,8 +41,8 @@ import { NovaEarnMD, IntroductionMD, NovaAuctionMD } from '../docs/init';
 
 const docsMap = new Map<string, any>([
     ['1', IntroductionMD],
-    ['3', NovaEarnMD],
-    ['4', NovaAuctionMD],
+    ['2', NovaEarnMD],
+    ['3', NovaAuctionMD],
 ]);
 
 

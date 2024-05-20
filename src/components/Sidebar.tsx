@@ -8,7 +8,9 @@ const { Header, Content, Footer, Sider } = Layout;
 
 const items: MenuProps['items'] = [
   'Introduction',
-  'App Guide',
+  // 'App Guide',
+  'Nova Earn',
+  'Nova Auction',
 
 
 ].map((name, index) => ({
@@ -16,22 +18,21 @@ const items: MenuProps['items'] = [
   label: `${name}`,
 }));
 
-
-console.log(items);
-if (items[1] != null) {
-  items[1]['children'] = [
-    {
-      key: '3',
-      icon: undefined,
-      label: 'Nova Earn',
-    },
-    {
-      key: '4',
-      icon: undefined,
-      label: 'Nova Auction',
-    }
-  ];
-}
+// console.log(items);
+// if (items[1] != null) {
+//   items[1]['children'] = [
+//     {
+//       key: '3',
+//       icon: undefined,
+//       label: 'Nova Earn',
+//     },
+//     {
+//       key: '4',
+//       icon: undefined,
+//       label: 'Nova Auction',
+//     }
+//   ];
+// }
 
 type SidebarContainerProps = {
   selectedHandler: (tab: string) => void;

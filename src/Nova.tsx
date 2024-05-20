@@ -22,6 +22,9 @@ import { useAccountEffect } from 'wagmi'
 import { clearDB } from './utils/contract';
 import React from 'react';
 
+import { FaTwitter, FaGithub, FaTelegram, FaDiscord } from 'react-icons/fa';
+
+
 const NovaPage = () => {
 
   const [activeTab, setActiveTab] = useState('docs');
@@ -82,6 +85,15 @@ const NovaPage = () => {
             Auction
           </Tab>
         </TabContainer>
+        <div>
+          {/* <FaTwitter size={20} style={{ marginRight: 'rem' }} />
+          <FaGithub size={20} style={{ marginRight: '0.5rem' }} />
+          <FaTelegram size={20} style={{ marginRight: '0.5rem' }} /> */}
+          <FaDiscord size={20} onClick={() => {
+            window.open('https://discord.com/invite/ra5T3JfU', '_blank');
+          }} style={{ marginRight: '0.5rem' }} style={{ marginRight: '0.5rem', cursor: 'pointer' }}
+          />
+        </div>
         <WalletOptionsButton />
 
         {/* {isAdmin &&
