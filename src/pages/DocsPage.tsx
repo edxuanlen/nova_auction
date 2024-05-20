@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
 import Sidebar from '../components/Sidebar';
-import Content from '../components/Content';
+// import Content from '../components/Content';
+import SearchBox from '../components/SearchBox';
+import { Layout, Menu, theme } from 'antd';
+import Markdown from 'react-markdown';
+import * as remark from 'remark';
+import fs from 'fs';
+
+
+import remarkGfm from 'remark-gfm';
+
+// declare module '*.md';
+// import Introduction from '../docs/1.md';
+// import NovaEarn from '../docs/3.md';
+// import NovaAuction from '../docs/4.md';
+
+// const docsMap = new Map<string, string>([
+//   ['1', Introduction],
+//   ['3', NovaEarn],
+//   ['4', NovaAuction],
+// ]);
+
+
+const { Header, Content, Footer, Sider } = Layout;
 
 const DocsPageContainer = styled.div`
   position: fixed;
@@ -11,75 +33,97 @@ const DocsPageContainer = styled.div`
   left: 0;
   right: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   background-color: #ffffff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   overflow-y: auto; // 添加垂直滚动条
 `;
 
-const ContentArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-`;
 
 
 const SidebarContainer = styled.div`
   width: 250px;
   background: #f0f0f0;
   padding: 20px;
+  height: 20%;
 `;
 
-const SidebarLink = styled.div`
-  display: block;
-  padding: 10px;
-  color: black;
-  text-decoration: none;
-  background: #f0f0f0; // 默认背景色
-
-  &:hover, &:focus {
-    background: lightblue;
-    cursor: pointer;  // 添加在 hover 和 focus 时的 cursor 样式
-  }
-
-  &.active {
-    color: white;
-    background: #007BFF; // 激活状态的背景色
-    font-weight: bold;
-  }
-`;
+// const processor = remark().use(remarkGfm);
 
 
 const DocsPage = () => {
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
-    const [activeLink, setActiveLink] = React.useState('');
-
-    return (
-        <DocsPageContainer>
+  const [selectedTab, setSelectedTab] = React.useState('1');
+  const [content, setContent] = React.useState('');
 
 
-            <SidebarContainer>
-                <SidebarLink
-                    onClick={() => setActiveLink('introduction')}
-                    className={activeLink === 'introduction' ? 'active' : ''}
-                >
-                    Introduction
-                </SidebarLink>
-                <SidebarLink
-                    onClick={() => setActiveLink('app-guide')}
-                    className={activeLink === 'app-guide' ? 'active' : ''}
-                >
-                    App Guide
-                </SidebarLink>
-            </SidebarContainer>
+  return (
+    <DocsPageContainer>
+      <SidebarContainer>
+        {/* <SearchBox /> */}
+        <Sidebar selectedHandler={function (tab: string): void {
+          console.log("tab: ", tab);
+          setSelectedTab(tab);
 
-            <ContentArea>
-                {activeLink === 'introduction' && <Content markdown="# Introduction  Here is some introduction content. </br>" />}
-                {activeLink === 'app-guide' && <Content markdown="# App Guide  Here is some app guide content. </br>" />}
-            </ContentArea>
-        </DocsPageContainer>
-    );
+          const filename = 'http://localhost:8000/' + selectedTab + '.md';
+
+          fetch(filename).then((response) => response.text()).then((text) => {
+            setContent(text);
+          })
+
+        }} />
+      </SidebarContainer>
+      {/* <Main>
+        <Routes>
+          <Route path="/:section/:page" element={<Content />} />
+          <Route path="*" element={<Content />} />
+        </Routes>
+      </Main> */}
+
+
+      <Layout style={{}}>
+        {/* <Header style={{ padding: 0, background: colorBgContainer }} /> */}
+        <Content style={{ overflow: 'initial' }}>
+          <div
+            style={{
+              padding: 24,
+              textAlign: 'center',
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+
+            <Markdown
+              className="markdown"
+              remarkPlugins={[remarkGfm]}
+            // children={selectedTab}
+            >
+              {content}
+
+
+            </Markdown>
+
+            {/* <p>long content</p>
+            {
+              Array.from({ length: 100 }, (_, index) => (
+                <React.Fragment key={index}>
+                  {index % 20 === 0 && index ? 'more' : '...'}
+                  <br />
+                </React.Fragment>
+              ))
+            } */}
+          </div>
+        </Content>
+        {/* <Footer style={{ textAlign: 'center' }}>
+          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+        </Footer> */}
+      </Layout>
+    </DocsPageContainer>
+  );
 };
 
 export default DocsPage;

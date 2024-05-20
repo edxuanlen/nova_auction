@@ -72,12 +72,10 @@ export class LogCollector extends Component {
     render() {
         return (
             <div>
-                {(import.meta.env.VITE_LOG_COLLECTOR != undefined) && (
-                    <FloatingButton onClick={this.handleSendLogs}>
-                        <i className="fas fa-download"></i>
-                        <span>DEBUG</span>
-                    </FloatingButton>
-                )}
+                <FloatingButton onClick={this.handleSendLogs}>
+                    <i className="fas fa-download"></i>
+                    <span>DEBUG</span>
+                </FloatingButton>
             </div>
         );
     }

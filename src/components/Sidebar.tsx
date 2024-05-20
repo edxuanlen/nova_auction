@@ -1,55 +1,56 @@
-// components/Sidebar.js
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+
+import type { MenuProps } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 import styled from 'styled-components';
 
-const SidebarContainer = styled.div`
-  width: 250px;
-  background: #f0f0f0;
-  padding: 20px;
-`;
+const { Header, Content, Footer, Sider } = Layout;
 
-const SidebarLink = styled.div`
-  display: block;
-  padding: 10px;
-  color: black;
-  text-decoration: none;
-  background: #f0f0f0; // 默认背景色
+const items: MenuProps['items'] = [
+  'Introduction',
+  'App Guide',
 
-  &:hover {
-    background: lightblue;
-  }
 
-  &.active {
-    color: white;
-    background: #007BFF; // 激活状态的背景色
-    font-weight: bold;
-  }
-`;
+].map((name, index) => ({
+  key: String(index + 1),
+  label: `${name}`,
+}));
 
-const Sidebar = () => {
-    const location = useLocation();
 
-    const isActiveLink = (path, hash) => {
-        console.log(location.pathname, location.hash);
-        return location.pathname === path && location.hash === hash;
-    };
+console.log(items);
+if (items[1] != null) {
+  items[1]['children'] = [
+    {
+      key: '3',
+      icon: undefined,
+      label: 'Nova Earn',
+    },
+    {
+      key: '4',
+      icon: undefined,
+      label: 'Nova Auction',
+    }
+  ];
+}
 
-    return (
-        <SidebarContainer>
-            <SidebarLink
-                // to="/docs#introduction"
-                className='active'
-            >
-                Introduction
-            </SidebarLink>
-            <SidebarLink
-            // to="/docs#app-guide"
-            >
-                App Guide
-            </SidebarLink>
-        </SidebarContainer>
-    );
+type SidebarContainerProps = {
+  selectedHandler: (tab: string) => void;
+};
+
+const Sidebar: React.FC<SidebarContainerProps> = ({ selectedHandler }) => {
+  return (
+    <Sider
+      style={{ overflowY: 'hidden', height: '100%', marginTop: '16px' }}
+    >
+      <div className="demo-logo-vertical" />
+      <Menu
+        onSelect={(event) => {
+          selectedHandler(event.key);
+        }}
+        theme="light" mode="inline" defaultSelectedKeys={['1']} items={items} />
+    </Sider>
+
+  );
 };
 
 export default Sidebar;

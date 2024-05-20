@@ -39,6 +39,8 @@
     "react-markdown": "^9.0.1",
     "react-paginate": "^8.2.0",
     "react-router-dom": "^6.23.1",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.0",
     "styled-components": "^6.1.9",
     "typechain": "^8.3.2",
     "typescript": "^5.2.2",

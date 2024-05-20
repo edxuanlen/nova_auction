@@ -20,6 +20,7 @@ import AuctionPage from './pages/AuctionPage';
 
 import { useAccountEffect } from 'wagmi'
 import { clearDB } from './utils/contract';
+import React from 'react';
 
 const NovaPage = () => {
 
@@ -106,7 +107,9 @@ const NovaPage = () => {
           <Route path="/auction" Component={AuctionPage} />
         )}
       </Routes>
-      <LogCollector />
+      {(import.meta.env.VITE_LOG_COLLECTOR != undefined) && (
+        <LogCollector />
+      )}
       <BlockTimestampSync />
     </Container >
   );
