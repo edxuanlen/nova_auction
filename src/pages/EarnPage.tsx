@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { formatEther, erc20Abi, maxUint256 } from 'viem';
+import { formatEther, erc20Abi, maxUint256, TransactionExecutionError, ContractFunctionExecutionError } from 'viem';
 import { ethers } from 'ethers';
 // import { readContract } from '@wagmi/core';
 import { flowPreviewnet, foundry } from 'viem/chains';
@@ -46,6 +46,7 @@ import styled from 'styled-components';
 import { EarningInfo } from '../types';
 import { formatPercentage } from '../utils/math';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { extractSignature } from '../utils/error_handler';
 
 
 const EarnPage = () => {
@@ -198,13 +199,15 @@ const EarnPage = () => {
         setIsPending(true);
         console.log("onSupply: ", amount);
         if (isNaN(amount) || !isFinite(amount)) {
-            console.log("金额违法！");
+            setModalText("Invalid amount!");
+            setIsOpen(true);
             setIsPending(false);
             return;
         }
 
         if (address == undefined) {
-            console.log("还没登陆！");
+            setIsOpen(true);
+            setModalText("You must login first!");
             setIsPending(false);
             return;
         }
@@ -212,25 +215,28 @@ const EarnPage = () => {
         if (amount > ezETHBalance) {
             setIsOpen(true);
             setModalText("insufficient free balance!");
-            console.log("你没钱啦: ", ezETHBalance, amount);
             setIsPending(false);
             return;
         }
 
         if (amount === 0) {
-            console.log("钱不能是空哒！", ezETHBalance, amount);
+            setModalText("Could not deposit 0!");
+            setIsOpen(true);
             setIsPending(false);
             return;
         }
-
-        console.log("你即将支付:", amount);
 
         // convert to ether
         const etherAmount = ethers.parseEther(amount.toString())
 
         try {
 
-            // 准备合约写入，传递合约信息和要调用的方法及其参数
+            const res = await getAllowance(address);
+            if (Number(res) < amount) {
+                await onApprove();
+            }
+
+            // Prepare contract write, pass contract info and the method to call and its parameters.
             const result = simulateContract(
                 config, {
                 abi: auctionABI,
@@ -257,7 +263,19 @@ const EarnPage = () => {
             console.log("transactionReceipt: ", transactionReceipt);
             setChange(!change);
         } catch (e) {
-            console.log("error", e);
+            console.log("error: ", e);
+            if (e instanceof TransactionExecutionError) {
+                setModalText(e.details);
+                setIsOpen(true);
+            }
+            if (e instanceof ContractFunctionExecutionError) {
+                if (extractSignature(e.shortMessage) === '0xfb8f41b2') {
+                    setModalText("ERC20InsufficientAllowance!");
+                } else {
+                    setModalText(e.shortMessage);
+                }
+                setIsOpen(true);
+            }
         }
         setIsPending(false);
     }

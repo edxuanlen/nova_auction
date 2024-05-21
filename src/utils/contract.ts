@@ -75,21 +75,21 @@ export const getBlockTime = async (blockNumber: number) => {
 }
 
 export const clearDB = async () => {
-    let dbHelper = new IndexedDBHelper("BlockchainData", IndexedDBHelper.ApyHistory);
+    const dbHelper = new IndexedDBHelper("BlockchainData", IndexedDBHelper.ApyHistory);
 
     dbHelper.open().then(() => {
         return dbHelper.clear();
     });
-    dbHelper = new IndexedDBHelper("BlockchainData", IndexedDBHelper.BidHistory);
+    const dbHelper1 = new IndexedDBHelper("BlockchainData", IndexedDBHelper.BidHistory);
 
-    dbHelper.open().then(() => {
-        return dbHelper.clear();
+    dbHelper1.open().then(() => {
+        return dbHelper1.clear();
     });
 
-    dbHelper = new IndexedDBHelper("BlockchainData", IndexedDBHelper.DividendHistory);
+    const dbHelper2 = new IndexedDBHelper("BlockchainData", IndexedDBHelper.DividendHistory);
 
-    dbHelper.open().then(() => {
-        return dbHelper.clear();
+    dbHelper2.open().then(() => {
+        return dbHelper2.clear();
     });
 }
 

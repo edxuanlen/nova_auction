@@ -15,14 +15,13 @@ interface CustomModalProps {
 const CustomModal = ({ open, onOk, onCancel, modalText }: CustomModalProps) => {
     return (
         <Modal
-            title="Modal"
+            // title=""
             open={open}
             onOk={onOk}
             onCancel={onCancel}
-            okText="确认"
-            cancelText="取消"
+            centered
         >
-            <p color='black'>{modalText}</p>
+            <p color='black' style={{ color: 'black', fontSize: '24px' }} >{modalText}</p>
         </Modal>
     );
 };
