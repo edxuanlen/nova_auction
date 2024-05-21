@@ -91,7 +91,7 @@ const NovaPage = () => {
           <FaTelegram size={20} style={{ marginRight: '0.5rem' }} /> */}
           <FaDiscord size={20} onClick={() => {
             window.open('https://discord.com/invite/ra5T3JfU', '_blank');
-          }} style={{ marginRight: '0.5rem' }} style={{ marginRight: '0.5rem', cursor: 'pointer' }}
+          }} style={{ marginRight: '0.5rem', cursor: 'pointer' }}
           />
         </div>
         <WalletOptionsButton />
