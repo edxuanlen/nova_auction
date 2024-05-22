@@ -10,7 +10,7 @@ import { LogCollector, BlockTimestampSync } from './components';
 
 import './components/EventWatcher';
 
-import { BrowserRouter as Router, Route, Link, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 
 // import { contract, ezContract, tokenContract } from './utils/contract';
 

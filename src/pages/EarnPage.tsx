@@ -403,7 +403,8 @@ const EarnPage = () => {
 
             {selectedTab === 'supply' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance.toFixed(6) : '0'} ezETH</WalletBalance>
+                    <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance.toFixed(6) : '0'}                     <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                    </WalletBalance>
                     <WalletBalance>
                         Earnings: <ClickableText clickable='true' onClick={() => { setIsOpenIncome(true) }}>{TotalEarning?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</ClickableText> ezETH
                     </WalletBalance>
@@ -565,7 +566,7 @@ const AmountInput = styled.input`
 const WalletBalanceWrapper = styled.div`
     display: flex;
     align-items: center;
-    margin-right: 5rem;
+    // margin-right: 5rem;
 `;
 
 const ETHMiniLogoImage = styled.img`
