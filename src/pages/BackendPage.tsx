@@ -5,14 +5,9 @@ import { ethers } from 'ethers';
 import { ADMIN_ADDRESS } from '../config';
 // import {}
 import { useAccount, } from 'wagmi';
-
-interface Auction {
-  startTime: Date;
-  endTime: Date;
-  pointsType: string;
-  pointsQuantity: number;
-  startingBid: number;
-}
+import { Table, ColumnsType } from 'antd';
+import { AuctionInfo, AuctionType } from '../types';
+import { createAuction } from '../utils/contract';
 
 const Button = styled.button`
   padding: 5px 10px;
@@ -69,7 +64,7 @@ const StyledButton = styled(Button)`
 `;
 
 interface AllAuctionsProps {
-  auctions: Auction[];
+  auctions: AuctionInfo[];
   handleDelete: (index: number) => void;
 }
 
@@ -156,7 +151,7 @@ const SubmitButton = styled.button`
 `;
 interface AuctionFormProps {
   handleSubmit: () => void;
-  newAuction: Auction;
+  newAuction: AuctionInfo;
   handleAuctionChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
@@ -164,10 +159,27 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
 
   // update points
 
-
-
-
-
+  //         p0 = PointsAuction.functions.getCurrentPoints(0).call() - PointsAuction.functions.getSoldPoints(0).call()
+  // p1 = PointsAuction.functions.getCurrentPoints(1).call() - PointsAuction.functions.getSoldPoints(1).call()
+  // print(PointsAuction.functions.createAuction(
+  //     [0,1],
+  //     [
+  //         [
+  //             int(time.time() + delay * 60) ,
+  //             duration * 60,
+  //             p0,
+  //             p0,
+  //             10 ** 10,
+  //             1
+  //     ], [
+  //             int(time.time() + delay * 60),
+  //             duration * 60,
+  //             p1,
+  //             p1,
+  //             10 ** 10,
+  //             1
+  //     ],]
+  // ).transact({'from': admin.address}).hex())
   return (
     <FormContainer>
       <h2>Create a New Auction</h2>
@@ -183,8 +195,15 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
           <Input
             type="datetime-local"
             name="startTime"
-            value={newAuction.startTime.toISOString().substring(0, 16)}
+            value={newAuction.startTime.toLocaleString('en-CA', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+            }).replace(', ', 'T').substring(0, 16)}
             onChange={handleAuctionChange}
+            disabled
           />
         </Label>
 
@@ -193,8 +212,16 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
           <Input
             type="datetime-local"
             name="endTime"
-            value={newAuction.endTime.toISOString().substring(0, 16)}
+            value={newAuction.startTime.toLocaleString('en-CA', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+            }).replace(', ', 'T').substring(0, 16)}
             onChange={handleAuctionChange}
+            disabled
+            color='#ffffff'
           />
         </Label>
 
@@ -210,7 +237,7 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
           </PointsSelect>
         </Label>
 
-        <Label>
+        {/* <Label>
           Points Quantity:
           <Input
             type="number"
@@ -218,7 +245,7 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
             value={newAuction.pointsQuantity}
             onChange={handleAuctionChange}
           />
-        </Label>
+        </Label> */}
 
         <Label>
           Starting Bid(ezETH):
@@ -236,18 +263,40 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
   );
 };
 
+// const columns: ColumnsType<any> = [
+//   {
+//     title: '拍卖时间',
+//     dataIndex: 'username',
+//     key: 'username',
+//   },
+//   {
+//     title: '拍卖类型',
+//     dataIndex: 'username',
+//     key: 'username',
+//   },
+//   {
+//     title: '拍卖日期',
+//     dataIndex: 'date_joined',
+//     key: 'date_joined',
+//   },
+// ];
+
 
 const BackendPage = () => {
   const { address } = useAccount();
+  // const [loading, setLoading] = useState(false);
 
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [newAuction, setNewAuction] = useState<Auction>({
+  // const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [newAuction, setNewAuction] = useState<AuctionInfo>({
     startTime: new Date(),
     endTime: new Date(),
-    pointsType: '',
+    pointsType: AuctionType.EzPoints,
     pointsQuantity: 0,
     startingBid: 0,
   });
+  newAuction.startTime.setMinutes(newAuction.startTime.getMinutes() + 1);
+  newAuction.endTime.setHours(newAuction.startTime.getHours() + 20);
+  console.log("newAuction", newAuction);
 
   // 用于判断当前用户是否是管理员
   const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
@@ -262,22 +311,25 @@ const BackendPage = () => {
 
   const handleSubmit = () => {
     // 处理提交拍卖会的逻辑
-    const newAuctions = [...auctions, newAuction];
-    setAuctions(newAuctions);
+    // const newAuctions = [...auctions, newAuction];
+    // setAuctions(newAuctions);
+
+    console.log("newAuction", newAuction);
+    createAuction(newAuction);
     // 清空表单
     setNewAuction({
       startTime: new Date(),
       endTime: new Date(),
-      pointsType: '',
+      pointsType: AuctionType.EzPoints,
       pointsQuantity: 0,
       startingBid: 0,
     });
   };
 
-  const handleDelete = (index: number) => {
-    const updatedAuctions = auctions.filter((_, i) => i !== index);
-    setAuctions(updatedAuctions);
-  };
+  // const handleDelete = (index: number) => {
+  //   const updatedAuctions = auctions.filter((_, i) => i !== index);
+  //   setAuctions(updatedAuctions);
+  // };
 
   return (
     <div>
@@ -287,7 +339,22 @@ const BackendPage = () => {
           <AuctionForm handleSubmit={handleSubmit}
             newAuction={newAuction}
             handleAuctionChange={handleAuctionChange} />
-          <AllAuctions auctions={auctions} handleDelete={handleDelete} />
+          {/* <AllAuctions auctions={auctions} handleDelete={handleDelete} /> */}
+          {/*<Table
+            rowKey="id"
+            columns={columns}
+            dataSource={auctions}
+            expandable={{
+              // expandedRowRender: record => (
+              //   <EmployeeTable employees={employeesData[record.id] || []} />
+              // ),
+              expandRowByClick: true,
+              // expandedRowKeys: expandedRowKeys,
+              // onExpand: handleExpand,
+            }}
+            loading={loading}
+            pagination={false}
+          /> */}
         </div>
       ) : (
         <p>You do not have access to this page.</p>

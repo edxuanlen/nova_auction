@@ -28,6 +28,15 @@ import { FaTwitter, FaGithub, FaTelegram, FaDiscord } from 'react-icons/fa';
 import ReactGA from 'react-ga4';
 
 
+const ProtectedRoute: React.FC<{ children: JSX.Element; show: Boolean }> = ({ children, show }) => {
+  if (show) {
+    return children;
+  }
+  else {
+    return <Navigate to="/" replace />;
+  }
+};
+
 const NovaPage = () => {
 
   const [activeTab, setActiveTab] = useState('docs');
@@ -35,20 +44,25 @@ const NovaPage = () => {
   const { address } = useAccount();
 
   const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
-  console.log("isAdmin", isAdmin)
-  console.log("address", address)
 
   const navigate = useNavigate();
+
+  const routePaths = [
+    'docs',
+    'earn',
+    'auction',
+    'admin'
+  ]
 
   useEffect(() => {
     // let selectedTab = getSelectedTab();
 
     const pathname = location.pathname.split('/')[1];
-    if (pathname === 'earn' || pathname === 'auction' || pathname === 'docs') {
+    if (routePaths.includes(pathname)) {
       setActiveTab(pathname);
     } else {
-      setActiveTab('earn');
-      navigate(`/earn`);
+      setActiveTab('docs');
+      navigate(`/docs`);
     }
   }, []);
 
@@ -124,6 +138,7 @@ const NovaPage = () => {
 
         <Route path="/" element={<Navigate to="/docs" replace />} />
         <Route path="" element={<Navigate to="/docs" replace />} />
+        <Route path='admin' Component={BackendPage} />
 
         {activeTab === 'docs' && (
           <Route path="/docs" Component={DocsPage} />
@@ -134,13 +149,13 @@ const NovaPage = () => {
         {activeTab === 'auction' && (
           <Route path="/auction" Component={AuctionPage} />
         )}
-        <Route path='/admin' Component={BackendPage} />
       </Routes>
       {(import.meta.env.VITE_LOG_COLLECTOR != undefined) && (
         <LogCollector />
       )}
       <BlockTimestampSync />
     </Container >
+
   );
 };
 

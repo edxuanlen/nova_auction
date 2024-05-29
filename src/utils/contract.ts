@@ -15,7 +15,7 @@ import {
 } from '../config'
 
 
-import { EventInfo, EarningInfo } from '../types';
+import { EventInfo, EarningInfo, AuctionInfo } from '../types';
 import { convertSecTsToDate } from '../utils/time';
 import { fastPow, calculateAverage } from './math'
 
@@ -456,6 +456,48 @@ export async function getAllowance(address: Address) {
     return ethers.formatEther(result);
 }
 
+export async function createAuction(auction: AuctionInfo) {
+
+    const p_current = await readContract(config, {
+        abi: auctionABI,
+        address: auctionContractAddress,
+        functionName: 'getCurrentPoints',
+        args: [auction.pointsType],
+    });
+    const p_sold = await readContract(config, {
+        abi: auctionABI,
+        address: auctionContractAddress,
+        functionName: 'getSoldPoints',
+        args: [auction.pointsType],
+    });
+    const points = p_current - p_sold;
+    const ts = BigInt(Math.floor(auction.startTime.getTime() / 1000));
+    const duration = BigInt(Math.floor(auction.endTime.getTime() / 1000)) - ts;
+    const { request } = await simulateContract(config, {
+        abi: auctionABI,
+        address: auctionContractAddress,
+        functionName: 'createAuction',
+        args: [[auction.pointsType], [
+            {
+                startTime: ts,
+                duration: duration,
+                targetPoints: points,
+                pointsToSell: points,
+                startingPrice: ethers.parseEther(auction.startingBid.toString()),
+                state: 1
+            }
+        ]],
+
+    });
+
+    const hash = await writeContract(config, request);
+    console.log("Transaction hash: ", hash);
+
+    const transactionReceipt = await waitForTransactionReceipt(config, { hash });
+    console.log("Transaction receipt: ", transactionReceipt);
+
+    return transactionReceipt
+}
 
 // export const
 
