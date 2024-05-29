@@ -7,12 +7,15 @@ export const Content = styled.div`
 
   width: 40%;
   // max-width: 70%;
-  margin-top: 8rem;
+  // margin-top: 8rem;
   background-color: #ffffff;
   border-radius: 0.5rem;
   padding: 2rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-left: 5%;
+  // margin-left: 5%;
+
+  position: absolute;
+  top: 16rem;
 `;
 
 export const EarnContent = Content;

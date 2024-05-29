@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 // import { readContract } from '@wagmi/core';
 import { flowPreviewnet, foundry } from 'viem/chains';
 import ETHLogo from '../resources/ethLogo.png';
+import { ArrowUpOutlined } from '@ant-design/icons';
 
 import { getezETHBalance } from '../utils/wallet';
 import { Tabs, TabButton, InterestHistory, CustomModal } from '../components';
@@ -19,7 +20,8 @@ import {
     readContract, waitForTransactionReceipt
 } from '@wagmi/core'
 import { WalletOptionsButton } from '../Wallet'
-import { Tooltip } from 'antd';
+import { Divider, Steps, Tooltip, Card, Statistic, Row, Col } from 'antd';
+
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 const SupplyAmountContainer = AmountContainer;
@@ -47,12 +49,19 @@ import { EarningInfo } from '../types';
 import { formatPercentage } from '../utils/math';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { extractSignature } from '../utils/error_handler';
+import InputWithMax from '../components/InputWithMax';
+
 
 
 const EarnPage = () => {
     const [selectedTab, setSelectedTab] = useState('supply');
     const location = useLocation();
 
+    const [current, setCurrent] = useState(0);
+    const onChange = (value: number) => {
+        console.log('onChange:', value);
+        setCurrent(value);
+    };
 
     const [amount, setAmount] = useState(0);
     // const { balance, isFetching, error } = getezETHBalance();
@@ -142,32 +151,6 @@ const EarnPage = () => {
         if (address == undefined) {
             return 0;
         }
-
-        // const tokenAddress = await readContract(config, {
-        //     abi: auctionABI,
-        //     address: AuctionContractAddress,
-        //     functionName: 'getLpToken'
-        // });
-
-        // console.log("tokenAddress: ", tokenAddress);
-
-        // const result = await readContract(config, {
-        //     abi: erc20Abi,
-        //     address: tokenAddress,
-        //     functionName: 'balanceOf',
-        //     args: [address]
-        // });
-        // console.log("result:", result);
-
-
-        // console.log("withdraw balance: ", result);
-        // const convertRes = await readContract(config, {
-        //     abi: auctionABI,
-        //     address: AuctionContractAddress,
-        //     functionName: 'toMainToken',
-        //     args: [result]
-        // });
-
         // console.log("convertRes: ", convertRes);
         const balance = await getEzETHBalance(address);
         const freeBalance = await getFreeEzETHBalance(address);
@@ -358,9 +341,18 @@ const EarnPage = () => {
             setIsPending(false);
             return;
         }
-        await approveToken(address);
-        checkApprove();
-        setIsPending(false);
+        try {
+            await approveToken(address);
+            checkApprove();
+        } catch (error) {
+            console.log("error: ", error);
+        } finally {
+            if (!needApprove) {
+                console.log("needApprove: ", needApprove);
+                await setCurrent(1);
+            }
+            setIsPending(false);
+        }
     }
 
     const navigate = useNavigate();
@@ -374,133 +366,182 @@ const EarnPage = () => {
     }
 
     return (
-        <EarnContent>
-            <Tabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
-                setSelectedTab(tab);
-                // selectedTab = tab;
-                getWithdrawBalance();
-                if (address != undefined) {
-                    flushWalletBalance(address, setEzETHBalance);
+        <>
+            <Card
+                bordered={true}
+                style={
+                    {
+                        marginTop: '1rem',
+                        width: '10%',
+                        backgroundImage: 'linear-gradient(to right, #f6d365, #fda085)'
+                    }
                 }
-                navigate(`/earn#${tab}`);
-            }} />
+            >
+                <Statistic
+                    title="EzETH Earn APR"
+                    value={supplyAPR}
+                    precision={2}
+                    style={{ fontWeight: 'bold' }}
+                    valueStyle={{ color: '#3f8600', fontWeight: 'bold' }}
+                    prefix={<ArrowUpOutlined />}
+                    suffix="%"
+                // loading={supplyAPR === '0.00'}
+                />
+            </Card >
+
+            <EarnContent>
+                <Tabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
+                    setSelectedTab(tab);
+                    // selectedTab = tab;
+                    getWithdrawBalance();
+                    setAmount(0);
+                    if (address != undefined) {
+                        flushWalletBalance(address, setEzETHBalance);
+                    }
+                    navigate(`/earn#${tab}`);
+                }} />
+
+                {(current != 0 || needApprove) && (
+                    <Row gutter={24}>
+                        <Col span={6}>
+                            <Steps
+                                current={current}
+                                onChange={onChange}
+                                direction="vertical"
+                                items={[
+                                    {
+                                        title: 'Step 1',
+                                        description: 'approve ezETH',
+                                        disabled: true
+                                    },
+                                    {
+                                        title: 'Step 2',
+                                        disabled: true
+                                    },
+                                ]}
+                            />
+                        </Col>
+                        <Col span={8} > </Col>
+                        <Col span={5} style={{
+                            marginTop: '1rem', display: 'flex', justifyContent: 'center',
+                            height: '100%'
+                        }}>
+                            <BidButton onClick={onApprove} >
+                                Approve ezETH
+                            </BidButton>
+                        </Col>
+
+                    </Row>
+                )}
+
+                <SupplyAmountContainer>
+                    <Currency>
+                        <img src={ETHLogo} alt="ETH" style={{ width: '60px', height: '60px' }} />
+                        <span style={{ fontWeight: 'bold', fontSize: '24px' }} >ezETH</span>
+                    </Currency>
+                    <AuctionAmountRight>
+                        <InputWithMax
+                            value={amount}
+                            onChange={(e) => setAmount(parseFloat(e.target.value))}
+                            onMax={handleMaxClick}
+                        />
 
 
-            <SupplyAmountContainer>
-                <Currency>
-                    <img src={ETHLogo} alt="ETH" style={{ width: '60px', height: '60px' }} />
-                    <span style={{ fontWeight: 'bold', fontSize: '24px' }} >ezETH</span>
-                </Currency>
-                <AuctionAmountRight>
-                    <AmountInput
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(parseFloat(e.target.value))}
-                    />
-                    <MaxButton onClick={handleMaxClick}>MAX</MaxButton>
-                </AuctionAmountRight>
-            </SupplyAmountContainer>
-
-            {selectedTab === 'supply' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance.toFixed(6) : '0'}                     <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                    </WalletBalance>
-                    <WalletBalance>
-                        Earnings: <ClickableText clickable='true' onClick={() => { setIsOpenIncome(true) }}>{TotalEarning?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</ClickableText> ezETH
-                    </WalletBalance>
-                    {address &&
-                        (
-                            <InterestHistory infos={interestHistory}
-                                isOpen={isOpenIncome}
-                                onClose={() => (setIsOpenIncome(false))} />
+                        {isConnected && (
+                            <>
+                                <BidButton
+                                    onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
+                                    disabled={selectedTab === 'withdraw' ? amount > availableBalance : false || isPending}
+                                    style={{
+                                        backgroundColor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? '#ccc' : '',
+                                        cursor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? 'not-allowed' : '',
+                                        flex: 1,
+                                        marginRight: '8px',
+                                    }}
+                                >
+                                    {isPending ? <LoadingIcon /> : selectedTab === 'supply' ? 'Supply' : 'Withdraw'}
+                                </BidButton>
+                                {selectedTab === 'supply' && (
+                                    <Tooltip
+                                        color='gold' key='gold'
+                                        title={
+                                            <>
+                                                Please note: Funds cannot be withdrawn within 24 hours of deposit.
+                                                <br />
+                                                Please ensure that you have carefully read and understood the relevant rules before depositing funds.
+                                            </>
+                                        }
+                                    >
+                                        <InfoCircleOutlined style={{ cursor: 'pointer', color: 'blue' }} />
+                                    </Tooltip>
+                                )}
+                            </>
                         )}
 
-                </div>
-            )}
-            {selectedTab === 'withdraw' && (
-                <WalletBalanceWrapper>
-                    <WalletBalance>My Current Balance: {withdrawBalance.toFixed(6)} (
-                        <Tooltip
-                            color='gold' key='gold'
-                            title={
-                                <>
-                                    Available balance represents the amount that can be withdrawn or used for transactions.
-                                    <br />
-                                    Please note that there is a one-day cooling period for newly added funds, during which they cannot be withdrawn.
-                                </>
-                            }
-                        >
-                            <InfoCircleOutlined style={{ marginLeft: '4px', cursor: 'pointer' }} />
-                        </Tooltip>
-                        Available
-                        : {availableBalance.toFixed(6)})
-                    </WalletBalance>
-                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                </WalletBalanceWrapper>
-            )
-            }
+                    </AuctionAmountRight>
+                </SupplyAmountContainer>
 
-            <h3 style={{ color: '#000000' }}>My Stats</h3>
-            <StatsContainer>
-                <Stat>
-                    <StatKey>My total captial</StatKey>
-                    <SupplyAmmountValue>{withdrawBalance.toFixed(6)} ezETH</SupplyAmmountValue>
-                </Stat>
-                <Stat>
-                    <StatKey>Supply APR</StatKey>
-                    <TotalPriceValue>{supplyAPR}%</TotalPriceValue>
-                </Stat>
-            </StatsContainer>
-            <BidButtonContainer>
+                {selectedTab === 'supply' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <WalletBalance>Wallet Balance: {ezETHBalance ? ezETHBalance.toFixed(6) : '0'}
+                            <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                        </WalletBalance>
+                        <WalletBalance>
+                            Earnings: <ClickableText clickable='true' onClick={() => { setIsOpenIncome(true) }}>{TotalEarning?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</ClickableText> ezETH
+                        </WalletBalance>
+                        {address &&
+                            (
+                                <InterestHistory infos={interestHistory}
+                                    isOpen={isOpenIncome}
+                                    onClose={() => (setIsOpenIncome(false))} />
+                            )}
 
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    </div>
+                )}
+                {selectedTab === 'withdraw' && (
+                    <WalletBalanceWrapper>
+                        <WalletBalance>My Current Balance: {withdrawBalance.toFixed(6)} (
+                            <Tooltip
+                                color='gold' key='gold'
+                                title={
+                                    <>
+                                        Available balance represents the amount that can be withdrawn or used for transactions.
+                                        <br />
+                                        Please note that there is a one-day cooling period for newly added funds, during which they cannot be withdrawn.
+                                    </>
+                                }
+                            >
+                                <InfoCircleOutlined style={{ marginLeft: '4px', cursor: 'pointer' }} />
+                            </Tooltip>
+                            Available
+                            : {availableBalance.toFixed(6)})
+                        </WalletBalance>
+                        <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                    </WalletBalanceWrapper>
+                )
+                }
 
-                    {needApprove && (
-                        <BidButton onClick={onApprove} >
-                            Approve ezETH
-                        </BidButton>
-                    )}
-                    {!needApprove && (isConnected ? (
-                        <BidButton
-                            onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
-                            disabled={selectedTab === 'withdraw' ? amount > availableBalance : false || isPending}
-                            style={{
-                                backgroundColor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? '#ccc' : '',
-                                cursor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? 'not-allowed' : '',
-                                flex: 1,
-                                marginRight: '8px',
-                            }}
-                        >
-                            {isPending ? <LoadingIcon /> : selectedTab === 'supply' ? 'Supply' : 'Withdraw'}
-                        </BidButton>
+                <h3 style={{ color: '#000000' }}>My Stats</h3>
+                <StatsContainer>
+                    <Stat>
+                        <StatKey>My total captial</StatKey>
+                        <SupplyAmmountValue>{withdrawBalance.toFixed(6)} ezETH</SupplyAmmountValue>
+                    </Stat>
+                    <Stat>
+                        <StatKey>Supply APR</StatKey>
+                        <TotalPriceValue>{supplyAPR}%</TotalPriceValue>
+                    </Stat>
+                </StatsContainer>
+                <BidButtonContainer>
+                    <CustomModal
+                        onCancel={cancelModal}
+                        open={isOpen}
+                        onOk={handleOKModal}
+                        modalText={modalText} />
 
-                    ) : (
-                        <WalletOptionsButton />
-                    ))}
-                    {isConnected && selectedTab === 'supply' && (
-                        <Tooltip
-                            color='gold' key='gold'
-                            title={
-                                <>
-                                    Please note: Funds cannot be withdrawn within 24 hours of deposit.
-                                    <br />
-                                    Please ensure that you have carefully read and understood the relevant rules before depositing funds.
-                                </>
-                            }
-                        >
-                            <InfoCircleOutlined style={{ cursor: 'pointer', color: 'blue' }} />
-                        </Tooltip>
-                    )}
-                </div>
-
-                <CustomModal
-                    onCancel={cancelModal}
-                    open={isOpen}
-                    onOk={handleOKModal}
-                    modalText={modalText} />
-
-            </BidButtonContainer>
-        </EarnContent >
+                </BidButtonContainer>
+            </EarnContent >
+        </>
     );
 };
 
@@ -549,18 +590,6 @@ const BidButtonContainer = styled.div`
   background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 0.5rem;
-`;
-
-const AmountInput = styled.input`
-  padding: 10px;
-  background-color: #fff;
-  color: #000000;
-  font-size: 20px;
-  margin-right: 10px;
-
-  &:focus {
-    outline: none;
-  }
 `;
 
 const WalletBalanceWrapper = styled.div`

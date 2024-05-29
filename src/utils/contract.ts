@@ -292,7 +292,7 @@ export const getLogerWithWalletAddress = async (walletAddress: Address) => {
     // TODO(edxuanlen): To store the logs in the browser localstorage.
     const [chargedLogs, dealLogs, refundLogs] = await Promise.all([
         provider.getLogs({
-            fromBlock: lastDividendBlock + 1,
+            fromBlock: 0,
             toBlock: 'latest',
             address: auctionContractAddress,
             topics: [topicCharged],
@@ -324,7 +324,7 @@ export const getLogerWithWalletAddress = async (walletAddress: Address) => {
                 transactionTime: blockTime
             };
             bidHistory.push(eventInfo);
-            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: bidHistory.length.toString(), data: [eventInfo] });
+            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: log.index + (log.transactionIndex.toString()), data: [eventInfo] });
         }
 
     }
@@ -342,7 +342,7 @@ export const getLogerWithWalletAddress = async (walletAddress: Address) => {
                 transactionTime: blockTime
             };
             bidHistory.push(eventInfo);
-            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: bidHistory.length.toString(), data: [eventInfo] });
+            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: log.index + (log.transactionIndex.toString()), data: [eventInfo] });
         }
     }
 
@@ -359,7 +359,7 @@ export const getLogerWithWalletAddress = async (walletAddress: Address) => {
                 transactionTime: blockTime
             };
             bidHistory.push(eventInfo);
-            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: bidHistory.length.toString(), data: [eventInfo] });
+            dbHelper.addData({ blockNumber: log.blockNumber, unionKeyPath: log.index + (log.transactionIndex.toString()), data: [eventInfo] });
         }
     }
 
