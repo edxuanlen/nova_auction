@@ -31,6 +31,7 @@ import EigenLayerLogo from '../resources/eigenlayer.png';
 
 import { PointsTabs, CustomModal, BidHistory, LogCollector, SuccessNotification } from '../components';
 import { useNavigate } from 'react-router-dom';
+import ApprovalSteps from '../components/ApprovalSteps';
 
 const AuctionAmountContainer = AmountContainer;
 
@@ -53,11 +54,16 @@ const AuctionPage = () => {
     const [amountOfElPoints, setAmountOfElPoints] = useState(0.0);
 
     const [selectedTab, setSelectedTab] = useState('EzPoints');
-    const [needApprove, setNeedApprove] = useState(true);
+    const [needApprove, setNeedApprove] = useState(false);
     const [totalPoints, setTotalPoints] = useState<number | undefined>(undefined);
     const [lastBid, setLastBid] = useState<EventInfo | undefined>(undefined);
     const [showLastBid, setShowLastBid] = useState(false);
 
+    const [current, setCurrent] = useState(0);
+    const onChange = (value: number) => {
+        console.log('onChange:', value);
+        setCurrent(value);
+    };
 
     const pointsStr2Num = new Map<string, number>();
     pointsStr2Num.set('ElPoints', 0);
@@ -326,15 +332,35 @@ const AuctionPage = () => {
     }
 
     const onApprove = async () => {
+        setIsPending(true);
         if (address == undefined) {
             console.log("还没登陆！");
+            setIsPending(false);
             return;
         }
-        await approveToken(address);
-        checkApprove();
+        try {
+            await approveToken(address);
+            checkApprove();
+        } catch (error) {
+            console.log("error: ", error);
+        } finally {
+            if (!needApprove) {
+                console.log("needApprove: ", needApprove);
+                await setCurrent(1);
+            }
+            setIsPending(false);
+        }
     }
+
     return (
         <AuctionContent>
+            <ApprovalSteps
+                current={current}
+                needApprove={needApprove}
+                onChange={onChange}
+                onApprove={onApprove}
+            />
+
             <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
                 if (selectedTab == tab) return;
                 setShowLastBid(false);

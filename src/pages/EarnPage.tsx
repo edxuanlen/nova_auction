@@ -50,6 +50,7 @@ import { formatPercentage } from '../utils/math';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { extractSignature } from '../utils/error_handler';
 import InputWithMax from '../components/InputWithMax';
+import ApprovalSteps from '../components/ApprovalSteps';
 
 
 
@@ -401,38 +402,12 @@ const EarnPage = () => {
                     navigate(`/earn#${tab}`);
                 }} />
 
-                {(current != 0 || needApprove) && (
-                    <Row gutter={24}>
-                        <Col span={6}>
-                            <Steps
-                                current={current}
-                                onChange={onChange}
-                                direction="vertical"
-                                items={[
-                                    {
-                                        title: 'Step 1',
-                                        description: 'approve ezETH',
-                                        disabled: true
-                                    },
-                                    {
-                                        title: 'Step 2',
-                                        disabled: true
-                                    },
-                                ]}
-                            />
-                        </Col>
-                        <Col span={8} > </Col>
-                        <Col span={5} style={{
-                            marginTop: '1rem', display: 'flex', justifyContent: 'center',
-                            height: '100%'
-                        }}>
-                            <BidButton onClick={onApprove} >
-                                Approve ezETH
-                            </BidButton>
-                        </Col>
-
-                    </Row>
-                )}
+                <ApprovalSteps
+                    current={current}
+                    needApprove={needApprove}
+                    onChange={onChange}
+                    onApprove={onApprove}
+                />
 
                 <SupplyAmountContainer>
                     <Currency>
