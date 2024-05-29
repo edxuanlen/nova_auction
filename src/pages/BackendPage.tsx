@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { ethers } from 'ethers';
 
 import { ADMIN_ADDRESS } from '../config';
+// import {}
 import { useAccount, } from 'wagmi';
 
 interface Auction {
@@ -12,41 +13,6 @@ interface Auction {
   pointsQuantity: number;
   startingBid: number;
 }
-
-const Container = styled.div`
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-  margin: 0;
-  padding: 0;
-`;
-
-const AdminContainer = styled.div`
-  margin: 20px;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-`;
-
-
-// const Label = styled.label`
-//   display: block;
-//   margin-bottom: 5px;
-// `;
-
-// const Input = styled.input`
-//   padding: 5px;
-//   border-radius: 5px;
-//   border: 1px solid #ccc;
-//   margin-bottom: 10px;
-// `;
-
-const Select = styled.select`
-  padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-`;
 
 const Button = styled.button`
   padding: 5px 10px;
@@ -61,8 +27,6 @@ const Button = styled.button`
     background-color: #218838;
   }
 `;
-
-
 
 const AllAuctionsContainer = styled.div`
   padding: 20px;
@@ -143,8 +107,8 @@ const FormContainer = styled.div`
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  max-width: 500px;
+  background-color: #000000;
+  width: 100%;
   margin: 20px auto; // 居中
 `;
 
@@ -197,6 +161,13 @@ interface AuctionFormProps {
 }
 
 const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, handleAuctionChange }) => {
+
+  // update points
+
+
+
+
+
   return (
     <FormContainer>
       <h2>Create a New Auction</h2>
@@ -205,6 +176,7 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
           e.preventDefault();
           handleSubmit();
         }}
+
       >
         <Label>
           Start Time:
@@ -249,7 +221,7 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
         </Label>
 
         <Label>
-          Starting Bid:
+          Starting Bid(ezETH):
           <Input
             type="number"
             name="startingBid"

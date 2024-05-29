@@ -10,26 +10,33 @@ import { LogCollector, BlockTimestampSync } from './components';
 
 import './components/EventWatcher';
 
-import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // import { contract, ezContract, tokenContract } from './utils/contract';
 
 import EarnPage from './pages/EarnPage';
 import DocsPage from './pages/DocsPage';
 import AuctionPage from './pages/AuctionPage';
+import BackendPage from './pages/BackendPage';
 
-import { useAccountEffect } from 'wagmi'
+import { useAccountEffect, useAccount } from 'wagmi'
 import { clearDB } from './utils/contract';
+import { ADMIN_ADDRESS } from './config'
 import React from 'react';
 
 import { FaTwitter, FaGithub, FaTelegram, FaDiscord } from 'react-icons/fa';
+import ReactGA from 'react-ga4';
 
 
 const NovaPage = () => {
 
   const [activeTab, setActiveTab] = useState('docs');
 
-  // const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
+  const { address } = useAccount();
+
+  const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
+  console.log("isAdmin", isAdmin)
+  console.log("address", address)
 
   const navigate = useNavigate();
 
@@ -52,6 +59,17 @@ const NovaPage = () => {
       clearDB();
     },
   });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    ReactGA.initialize('G-YSRG1RRMQZ');
+    ReactGA.send("pageview");
+  }, []);
+
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
 
   return (
     <Container>
@@ -90,15 +108,15 @@ const NovaPage = () => {
           <FaGithub size={20} style={{ marginRight: '0.5rem' }} />
           <FaTelegram size={20} style={{ marginRight: '0.5rem' }} /> */}
           <FaDiscord size={20} onClick={() => {
-            window.open('https://discord.com/invite/ra5T3JfU', '_blank');
+            window.open('https://discord.gg/h6J7cFSRun', '_blank');
           }} style={{ marginRight: '0.5rem', cursor: 'pointer' }}
           />
         </div>
         <WalletOptionsButton />
 
-        {/* {isAdmin &&
-              (<BidHistoryButton onClick={() => (navigate("/admin"))}>Go to Backend</BidHistoryButton>)
-            } */}
+        {isAdmin &&
+          (<BidHistoryButton onClick={() => (navigate("/admin"))}>Go to Backend</BidHistoryButton>)
+        }
 
       </Header>
 
@@ -106,8 +124,6 @@ const NovaPage = () => {
 
         <Route path="/" element={<Navigate to="/docs" replace />} />
         <Route path="" element={<Navigate to="/docs" replace />} />
-        {/* <Route path="/earn" Component={EarnPage} />
-        <Route path="/auction" Component={AuctionPage} /> */}
 
         {activeTab === 'docs' && (
           <Route path="/docs" Component={DocsPage} />
@@ -118,6 +134,7 @@ const NovaPage = () => {
         {activeTab === 'auction' && (
           <Route path="/auction" Component={AuctionPage} />
         )}
+        <Route path='/admin' Component={BackendPage} />
       </Routes>
       {(import.meta.env.VITE_LOG_COLLECTOR != undefined) && (
         <LogCollector />
@@ -190,6 +207,25 @@ const LogoLink = styled.a`
 
 const LogoImage = styled.img`
   height: 30px;
+`;
+
+
+const BidHistoryButton = styled.button`
+  display: flex;
+  flex-direction: row;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 5rem;
+
+  &:hover {
+    background-color: #495057;
+  }
+
 `;
 
 export default NovaPage;
