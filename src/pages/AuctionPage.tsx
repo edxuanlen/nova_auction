@@ -359,6 +359,8 @@ const AuctionPage = () => {
                 needApprove={needApprove}
                 onChange={onChange}
                 onApprove={onApprove}
+                isConnected={isConnected}
+                lastStepText='Choose EzPoints or ElPoints to Bid'
             />
 
             <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {

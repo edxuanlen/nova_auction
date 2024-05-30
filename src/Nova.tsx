@@ -26,6 +26,7 @@ import React from 'react';
 
 import { FaTwitter, FaGithub, FaTelegram, FaDiscord } from 'react-icons/fa';
 import ReactGA from 'react-ga4';
+import TVLShower from './components/TVLShower';
 
 
 const ProtectedRoute: React.FC<{ children: JSX.Element; show: Boolean }> = ({ children, show }) => {
@@ -154,6 +155,9 @@ const NovaPage = () => {
         <LogCollector />
       )}
       <BlockTimestampSync />
+      {/* <BidButtonContainer> */}
+      <TVLShower />
+      {/* </BidButtonContainer> */}
     </Container >
 
   );

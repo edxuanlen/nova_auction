@@ -20,7 +20,7 @@ import {
     readContract, waitForTransactionReceipt
 } from '@wagmi/core'
 import { WalletOptionsButton } from '../Wallet'
-import { Divider, Steps, Tooltip, Card, Statistic, Row, Col } from 'antd';
+import { Divider, Steps, Tooltip, Card, Statistic, Row, Col, message } from 'antd';
 
 import { InfoCircleOutlined } from '@ant-design/icons';
 
@@ -51,6 +51,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { extractSignature } from '../utils/error_handler';
 import InputWithMax from '../components/InputWithMax';
 import ApprovalSteps from '../components/ApprovalSteps';
+import TVLShower from '../components/TVLShower';
 
 
 
@@ -162,7 +163,6 @@ const EarnPage = () => {
     const switchNetwork = async () => {
         if (isConnected) {
             console.log("isConnected: ", isConnected);
-            // console.log("")
 
             const hexString = window.ethereum.chainId;
             const chainIdBigInt = BigInt(hexString);
@@ -183,29 +183,25 @@ const EarnPage = () => {
         setIsPending(true);
         console.log("onSupply: ", amount);
         if (isNaN(amount) || !isFinite(amount)) {
-            setModalText("Invalid amount!");
-            setIsOpen(true);
+            message.warning("Invalid amount!");
             setIsPending(false);
             return;
         }
 
         if (address == undefined) {
-            setIsOpen(true);
-            setModalText("You must login first!");
+            message.warning("You must login first!");
             setIsPending(false);
             return;
         }
 
         if (amount > ezETHBalance) {
-            setIsOpen(true);
-            setModalText("insufficient free balance!");
+            message.warning("You don't have enough EzETH to deposit!");
             setIsPending(false);
             return;
         }
 
         if (amount === 0) {
-            setModalText("Could not deposit 0!");
-            setIsOpen(true);
+            message.warning("Could not deposit 0!");
             setIsPending(false);
             return;
         }
@@ -249,16 +245,14 @@ const EarnPage = () => {
         } catch (e) {
             console.log("error: ", e);
             if (e instanceof TransactionExecutionError) {
-                setModalText(e.details);
-                setIsOpen(true);
+                message.warning("Error: " + e.details);
             }
             if (e instanceof ContractFunctionExecutionError) {
                 if (extractSignature(e.shortMessage) === '0xfb8f41b2') {
-                    setModalText("ERC20InsufficientAllowance!");
+                    message.warning("ERC20InsufficientAllowance!");
                 } else {
-                    setModalText(e.shortMessage);
+                    message.warning("Error: " + e.details);
                 }
-                setIsOpen(true);
             }
         }
         setIsPending(false);
@@ -266,27 +260,27 @@ const EarnPage = () => {
 
     const onWithdraw = async () => {
         setIsPending(true);
-        console.log("onWithdraw: ", amount);
-        if (isNaN(amount) || !isFinite(amount)) {
-            console.log("金额违法！");
+        if (address == undefined) {
+            message.warning("No login! Please login first.");
             setIsPending(false);
             return;
         }
 
-        if (address == undefined) {
-            console.log("还没登陆！");
+        if (isNaN(amount) || !isFinite(amount)) {
+            message.warning("Invalid amount!");
             setIsPending(false);
             return;
         }
+
 
         if (amount > availableBalance) {
-            console.log("你没钱啦: ", availableBalance, amount);
+            message.warning("You don't have enough EzETH to withdraw!");
             setIsPending(false);
             return;
         }
 
         if (amount === 0) {
-            console.log("钱不能是空哒！", availableBalance, amount);
+            message.warning("Could not withdraw 0!");
             setIsPending(false);
             return;
         }
@@ -339,6 +333,7 @@ const EarnPage = () => {
         setIsPending(true);
         if (address == undefined) {
             console.log("还没登陆！");
+            message.warning("No login! Please login first!");
             setIsPending(false);
             return;
         }
@@ -407,6 +402,8 @@ const EarnPage = () => {
                     needApprove={needApprove}
                     onChange={onChange}
                     onApprove={onApprove}
+                    isConnected={isConnected}
+                    lastStepText='Supply or withdraw ezETH'
                 />
 
                 <SupplyAmountContainer>
@@ -421,36 +418,31 @@ const EarnPage = () => {
                             onMax={handleMaxClick}
                         />
 
-
-                        {isConnected && (
-                            <>
-                                <BidButton
-                                    onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
-                                    disabled={selectedTab === 'withdraw' ? amount > availableBalance : false || isPending}
-                                    style={{
-                                        backgroundColor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? '#ccc' : '',
-                                        cursor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? 'not-allowed' : '',
-                                        flex: 1,
-                                        marginRight: '8px',
-                                    }}
-                                >
-                                    {isPending ? <LoadingIcon /> : selectedTab === 'supply' ? 'Supply' : 'Withdraw'}
-                                </BidButton>
-                                {selectedTab === 'supply' && (
-                                    <Tooltip
-                                        color='gold' key='gold'
-                                        title={
-                                            <>
-                                                Please note: Funds cannot be withdrawn within 24 hours of deposit.
-                                                <br />
-                                                Please ensure that you have carefully read and understood the relevant rules before depositing funds.
-                                            </>
-                                        }
-                                    >
-                                        <InfoCircleOutlined style={{ cursor: 'pointer', color: 'blue' }} />
-                                    </Tooltip>
-                                )}
-                            </>
+                        <BidButton
+                            onClick={selectedTab === 'supply' ? onSupply : onWithdraw}
+                            disabled={selectedTab === 'withdraw' ? amount > availableBalance : false || isPending}
+                            style={{
+                                backgroundColor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? '#ccc' : '',
+                                cursor: !(selectedTab === 'withdraw' ? amount <= availableBalance : true) ? 'not-allowed' : '',
+                                flex: 1,
+                                marginRight: '8px',
+                            }}
+                        >
+                            {isPending ? <LoadingIcon /> : selectedTab === 'supply' ? 'Supply' : 'Withdraw'}
+                        </BidButton>
+                        {selectedTab === 'supply' && (
+                            <Tooltip
+                                color='gold' key='gold'
+                                title={
+                                    <>
+                                        Please note: Funds cannot be withdrawn within 24 hours of deposit.
+                                        <br />
+                                        Please ensure that you have carefully read and understood the relevant rules before depositing funds.
+                                    </>
+                                }
+                            >
+                                <InfoCircleOutlined style={{ cursor: 'pointer', color: 'blue' }} />
+                            </Tooltip>
                         )}
 
                     </AuctionAmountRight>
@@ -507,14 +499,6 @@ const EarnPage = () => {
                         <TotalPriceValue>{supplyAPR}%</TotalPriceValue>
                     </Stat>
                 </StatsContainer>
-                <BidButtonContainer>
-                    <CustomModal
-                        onCancel={cancelModal}
-                        open={isOpen}
-                        onOk={handleOKModal}
-                        modalText={modalText} />
-
-                </BidButtonContainer>
             </EarnContent >
         </>
     );

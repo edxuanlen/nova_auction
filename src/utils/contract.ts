@@ -292,7 +292,7 @@ export const getLogerWithWalletAddress = async (walletAddress: Address) => {
     // TODO(edxuanlen): To store the logs in the browser localstorage.
     const [chargedLogs, dealLogs, refundLogs] = await Promise.all([
         provider.getLogs({
-            fromBlock: 0,
+            fromBlock: lastDividendBlock + 1,
             toBlock: 'latest',
             address: auctionContractAddress,
             topics: [topicCharged],
@@ -497,6 +497,16 @@ export async function createAuction(auction: AuctionInfo) {
     console.log("Transaction receipt: ", transactionReceipt);
 
     return transactionReceipt
+}
+
+export async function getTVL() {
+    const tvl = await readContract(config, {
+        abi: erc20Abi,
+        address: ezETHContractAddress,
+        functionName: 'balanceOf',
+        args: [auctionContractAddress],
+    });
+    return Number(ethers.formatEther(tvl));
 }
 
 // export const
