@@ -94,13 +94,13 @@ export const PointsTabs: React.FC<TabsProps> = ({ selectedTab, onTabClick }) => 
                 selected={selectedTab === 'EzPoints'}
                 onClick={() => onTabClick('EzPoints')}
             >
-                <img src={renzo} alt="renzo" style={{ width: '40px', height: '40px' }} /> Points
+                <img src={renzo} alt="renzo" style={{ width: '40px', height: '40px' }} /> EzPoints
             </IconTabButton>
             <IconTabButton
                 selected={selectedTab === 'ElPoints'}
                 onClick={() => onTabClick('ElPoints')}
             >
-                <img src={eigenlayer} alt="renzo" style={{ width: '40px', height: '40px' }} /> Points
+                <img src={eigenlayer} alt="renzo" style={{ width: '40px', height: '40px' }} /> ElPoints
             </IconTabButton>
         </TabsContainer>
     );

@@ -399,7 +399,11 @@ const AuctionPage = () => {
                             <ETHLogoImage src={RenzoLogo} alt='RenzoLogo' />
                             : <ETHLogoImage src={EigenLayerLogo} alt='EigenLayerLogo' />
                         }
-                        <ETHLogoText>Points</ETHLogoText>
+                        {selectedTab == 'EzPoints' ?
+                            <ETHLogoText>EzPoints</ETHLogoText>
+                            : <ETHLogoText>ElPoints</ETHLogoText>
+                        }
+
                         {/* <ETHLogoImage src={ETHLogo} alt="MiniEthLogo" /> */}
                     </AuctionAmountLeft>
                     <AuctionAmountRight>
