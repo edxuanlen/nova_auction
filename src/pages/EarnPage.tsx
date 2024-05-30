@@ -52,6 +52,7 @@ import { extractSignature } from '../utils/error_handler';
 import InputWithMax from '../components/InputWithMax';
 import ApprovalSteps from '../components/ApprovalSteps';
 import TVLShower from '../components/TVLShower';
+import AprCard from '../components/AprCard';
 
 
 
@@ -363,27 +364,12 @@ const EarnPage = () => {
 
     return (
         <>
-            <Card
-                bordered={true}
-                style={
-                    {
-                        marginTop: '1rem',
-                        width: '10%',
-                        backgroundImage: 'linear-gradient(to right, #f6d365, #fda085)'
-                    }
-                }
-            >
-                <Statistic
-                    title="EzETH Earn APR"
-                    value={supplyAPR}
-                    precision={2}
-                    style={{ fontWeight: 'bold' }}
-                    valueStyle={{ color: '#3f8600', fontWeight: 'bold' }}
-                    prefix={<ArrowUpOutlined />}
-                    suffix="%"
-                // loading={supplyAPR === '0.00'}
-                />
-            </Card >
+            <AprCard
+                logoSrc={ETHLogo}
+                title="ezETH"
+                yieldValue={supplyAPR}
+                subTitle="fixed yield"
+            />
 
             <EarnContent>
                 <Tabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
@@ -403,7 +389,7 @@ const EarnPage = () => {
                     onChange={onChange}
                     onApprove={onApprove}
                     isConnected={isConnected}
-                    lastStepText='Supply or withdraw ezETH'
+                    lastStepText='Earn interest daily. Withdraw any time after 24h.'
                 />
 
                 <SupplyAmountContainer>

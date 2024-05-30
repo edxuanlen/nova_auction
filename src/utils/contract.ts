@@ -239,29 +239,8 @@ export const getContractEzETHBalance = async (blockNumber: bigint) => {
 
 
 export const getEzETHBalance = async (walletAddress: Address, blockNumber?: bigint) => {
-    // const tokenAddress = await readContract(config, {
-    //     abi: auctionABI,
-    //     address: auctionContractAddress,
-    //     functionName: 'getLpToken',
-    // });
-
-    // console.log("tokenAddress:", tokenAddress);
-
-    // const result = await readContract(config, {
-    //     abi: erc20Abi,
-    //     address: tokenAddress,
-    //     functionName: 'balanceOf',
-    //     args: [walletAddress],
-    //     blockNumber: blockNumber ?? undefined,
-    // });
     const balance = await tokenContract.balanceOf(walletAddress, { blockTag: blockNumber });
-    // const convertRes = await readContract(config, {
-    //     abi: auctionABI,
-    //     address: auctionContractAddress,
-    //     functionName: 'toMainToken',
-    //     blockNumber: blockNumber ?? undefined,
-    //     args: [balance]
-    // });
+
     const convertRes = await contract.toMainToken(balance, { blockTag: blockNumber });
     return Number(ethers.formatEther(convertRes));
 }

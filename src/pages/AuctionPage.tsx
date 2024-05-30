@@ -353,149 +353,172 @@ const AuctionPage = () => {
     }
 
     return (
-        <AuctionContent>
-            <ApprovalSteps
-                current={current}
-                needApprove={needApprove}
-                onChange={onChange}
-                onApprove={onApprove}
-                isConnected={isConnected}
-                lastStepText='Choose EzPoints or ElPoints to Bid'
-            />
+        <>
 
-            <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
-                if (selectedTab == tab) return;
-                setShowLastBid(false);
-                setSelectedTab(tab);
-                navigate(`/auction#${tab}`);
-                setTotalPoints(undefined);
-                setLastTradedPrice(undefined);
-                setEvents(undefined);
-            }} />
+            <TitleContainer>
+                <LargeTitle>Buy points in daily auctions, with no hassle.</LargeTitle>
+            </TitleContainer>
+            <AuctionContent>
 
-            <PriceInfoContainer>
-                <LastTradedPriceContainer>
-                    <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
-                    <LastTradedPriceValue>{lastTradedPrice?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</LastTradedPriceValue>
-                    <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                </LastTradedPriceContainer>
 
-                <LastTradedPriceContainer>
-                    <LastTradedPriceLabel>Total Points Earn:</LastTradedPriceLabel>
-                    <LastTradedPriceValue>{totalPoints?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</LastTradedPriceValue>
-                </LastTradedPriceContainer>
-            </PriceInfoContainer>
+                <ApprovalSteps
+                    current={current}
+                    needApprove={needApprove}
+                    onChange={onChange}
+                    onApprove={onApprove}
+                    isConnected={isConnected}
+                    lastStepText='Choose EzPoints or ElPoints to Bid'
+                />
 
-            <AuctionAmountContainer>
-                <AuctionAmountLeft>
-                    {selectedTab == 'EzPoints' ?
-                        <ETHLogoImage src={RenzoLogo} alt='RenzoLogo' />
-                        : <ETHLogoImage src={EigenLayerLogo} alt='EigenLayerLogo' />
-                    }
-                    <ETHLogoText>Points</ETHLogoText>
-                    {/* <ETHLogoImage src={ETHLogo} alt="MiniEthLogo" /> */}
-                </AuctionAmountLeft>
-                <AuctionAmountRight>
-                    {/* TODO: amount of points */}
-                    Total Supply Amount: {selectedTab == 'EzPoints' ? amountOfEzPoints.toFixed(6) : amountOfElPoints.toFixed(6)}
-                </AuctionAmountRight>
-            </AuctionAmountContainer>
+                <PointsTabs selectedTab={selectedTab} onTabClick={function (tab: string): void {
+                    if (selectedTab == tab) return;
+                    setShowLastBid(false);
+                    setSelectedTab(tab);
+                    navigate(`/auction#${tab}`);
+                    setTotalPoints(undefined);
+                    setLastTradedPrice(undefined);
+                    setEvents(undefined);
+                }} />
 
-            <AuctionCountdownContainer>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    {countdownType == 'end' && (
-                        <AuctionCountdownLabel>Auction End Countdown:</AuctionCountdownLabel>
-                    )}
-                    {countdownType == 'begin' && (
-                        <AuctionCountdownLabel>Auction Start Countdown:</AuctionCountdownLabel>
-                    )}
-                    <AuctionCountdownValues>
-                        <AuctionCountdownValue>
-                            <span>{auctionCountdown.hours}</span>
-                        </AuctionCountdownValue>
-                        <AuctionCountdownSign> : </AuctionCountdownSign>
-                        <AuctionCountdownValue>
-                            <span>{auctionCountdown.minutes}</span>
-                        </AuctionCountdownValue>
-                        <AuctionCountdownSign>  :  </AuctionCountdownSign>
-                        <AuctionCountdownValue>
-                            <span>{auctionCountdown.seconds}</span>
-                        </AuctionCountdownValue>
-                    </AuctionCountdownValues>
-                </div>
+                <PriceInfoContainer>
+                    <LastTradedPriceContainer>
+                        <LastTradedPriceLabel>Last Traded Price:</LastTradedPriceLabel>
+                        <LastTradedPriceValue>{lastTradedPrice?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</LastTradedPriceValue>
+                        <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                    </LastTradedPriceContainer>
 
-                <MyBidHistoryContainer>
+                    <LastTradedPriceContainer>
+                        <LastTradedPriceLabel>Total Points Earn:</LastTradedPriceLabel>
+                        <LastTradedPriceValue>{totalPoints?.toFixed(6) ?? (isConnected ? <LoadingIcon /> : 0)}</LastTradedPriceValue>
+                    </LastTradedPriceContainer>
+                </PriceInfoContainer>
 
-                    <BidHistoryButton onClick={() => setIsOpenBidHistory(true)}>My Bid History<ArrowIcon /></BidHistoryButton>
-                    {address && events &&
-                        (
-                            <BidHistory events={events}
-                                isOpen={isOpenBidHistory}
-                                filter={pointsStr2Num.has(selectedTab) ? pointsStr2Num.get(selectedTab) : 0n}
-                                onClose={() => (setIsOpenBidHistory(false))} />
+                <AuctionAmountContainer>
+                    <AuctionAmountLeft>
+                        {selectedTab == 'EzPoints' ?
+                            <ETHLogoImage src={RenzoLogo} alt='RenzoLogo' />
+                            : <ETHLogoImage src={EigenLayerLogo} alt='EigenLayerLogo' />
+                        }
+                        <ETHLogoText>Points</ETHLogoText>
+                        {/* <ETHLogoImage src={ETHLogo} alt="MiniEthLogo" /> */}
+                    </AuctionAmountLeft>
+                    <AuctionAmountRight>
+                        {/* TODO: amount of points */}
+                        Total Supply Amount: {selectedTab == 'EzPoints' ? amountOfEzPoints.toFixed(6) : amountOfElPoints.toFixed(6)}
+                    </AuctionAmountRight>
+                </AuctionAmountContainer>
+
+                <AuctionCountdownContainer>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        {countdownType == 'end' && (
+                            <AuctionCountdownLabel>Auction End Countdown:</AuctionCountdownLabel>
                         )}
-                    {address && events == undefined && <LoadingIcon />}
-                </MyBidHistoryContainer>
-            </AuctionCountdownContainer>
+                        {countdownType == 'begin' && (
+                            <AuctionCountdownLabel>Auction Start Countdown:</AuctionCountdownLabel>
+                        )}
+                        <AuctionCountdownValues>
+                            <AuctionCountdownValue>
+                                <span>{auctionCountdown.hours}</span>
+                            </AuctionCountdownValue>
+                            <AuctionCountdownSign> : </AuctionCountdownSign>
+                            <AuctionCountdownValue>
+                                <span>{auctionCountdown.minutes}</span>
+                            </AuctionCountdownValue>
+                            <AuctionCountdownSign>  :  </AuctionCountdownSign>
+                            <AuctionCountdownValue>
+                                <span>{auctionCountdown.seconds}</span>
+                            </AuctionCountdownValue>
+                        </AuctionCountdownValues>
+                    </div>
 
-            <BidContainer>
-                <BidInputContainer>
+                    <MyBidHistoryContainer>
 
-                    <BidInputItem>
-                        <BidLabel>Bidding Quantity:</BidLabel>
-                        <BidQuantityInput
-                            // type="number"
-                            value={bidQuantity}
-                            onChange={handleBidQuantityChange}
-                        />
-                    </BidInputItem>
-                    <BidInputItem>
+                        <BidHistoryButton onClick={() => setIsOpenBidHistory(true)}>My Bid History<ArrowIcon /></BidHistoryButton>
+                        {address && events &&
+                            (
+                                <BidHistory events={events}
+                                    isOpen={isOpenBidHistory}
+                                    filter={pointsStr2Num.has(selectedTab) ? pointsStr2Num.get(selectedTab) : 0n}
+                                    onClose={() => (setIsOpenBidHistory(false))} />
+                            )}
+                        {address && events == undefined && <LoadingIcon />}
+                    </MyBidHistoryContainer>
+                </AuctionCountdownContainer>
 
+                <BidContainer>
+                    <BidInputContainer>
 
-                        <BidLabel>Bidding Price:</BidLabel>
-                        <BidPriceInput
-                            // type="number"
-                            value={bidPrice}
-                            onChange={handleBidPriceChange}
-                        />
-                        <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                    </BidInputItem>
-                </BidInputContainer>
-                <TotalPriceContainer>
-                    <TotalPriceKey>
-                        Total Price:
-                    </TotalPriceKey>
-                    <TotalPriceValue>
-                        {totalPrice} ezETH
-                        <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
-                    </TotalPriceValue>
-                </TotalPriceContainer>
-            </BidContainer>
+                        <BidInputItem>
+                            <BidLabel>Bidding Quantity:</BidLabel>
+                            <BidQuantityInput
+                                // type="number"
+                                value={bidQuantity}
+                                onChange={handleBidQuantityChange}
+                            />
+                        </BidInputItem>
+                        <BidInputItem>
 
 
-            <BidButtonContainer>
+                            <BidLabel>Bidding Price:</BidLabel>
+                            <BidPriceInput
+                                // type="number"
+                                value={bidPrice}
+                                onChange={handleBidPriceChange}
+                            />
+                            <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                        </BidInputItem>
+                    </BidInputContainer>
+                    <TotalPriceContainer>
+                        <TotalPriceKey>
+                            Total Price:
+                        </TotalPriceKey>
+                        <TotalPriceValue>
+                            {totalPrice} ezETH
+                            <ETHMiniLogoImage src={ETHLogo} alt="MiniEthLogo" />
+                        </TotalPriceValue>
+                    </TotalPriceContainer>
+                </BidContainer>
 
-                {needApprove && (
-                    <BidButton onClick={onApprove} >Approve ezETH</BidButton>
-                )}
-                {!needApprove && ((Number(totalPrice) <= ezETHBalance) ?
-                    <BidButton onClick={handleBid} disabled={isPending}>
-                        {isPending ? <LoadingIcon /> : 'Bid'}
-                    </BidButton>
-                    :
-                    <BidButton>Insufficient balance</BidButton>)
-                }
 
-                {showLastBid && (<SuccessNotification lastBid={lastBid} />)}
-                <CustomModal
-                    onCancel={cancelModal}
-                    open={isOpen}
-                    onOk={handleOKModal}
-                    modalText={modalText} />
-            </BidButtonContainer>
-        </AuctionContent >
+                <BidButtonContainer>
+
+                    {needApprove && (
+                        <BidButton onClick={onApprove} >Approve ezETH</BidButton>
+                    )}
+                    {!needApprove && ((Number(totalPrice) <= ezETHBalance) ?
+                        <BidButton onClick={handleBid} disabled={isPending}>
+                            {isPending ? <LoadingIcon /> : 'Bid'}
+                        </BidButton>
+                        :
+                        <BidButton>Insufficient balance</BidButton>)
+                    }
+
+                    {showLastBid && (<SuccessNotification lastBid={lastBid} />)}
+                    <CustomModal
+                        onCancel={cancelModal}
+                        open={isOpen}
+                        onOk={handleOKModal}
+                        modalText={modalText} />
+                </BidButtonContainer>
+            </AuctionContent >
+        </>
     );
 };
+
+const TitleContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const LargeTitle = styled.h1`
+  font-size: 24px; // 调整字体大小
+  font-family: 'Arial', sans-serif; // 设置字体系列
+  color: white; // 字体颜色
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); // 添加阴影效果
+  margin: 0;
+`;
 
 
 const PriceInfoContainer = styled.div`
