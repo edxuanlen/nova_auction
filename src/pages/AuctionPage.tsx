@@ -32,6 +32,7 @@ import EigenLayerLogo from '../resources/eigenlayer.png';
 import { PointsTabs, CustomModal, BidHistory, LogCollector, SuccessNotification } from '../components';
 import { useNavigate } from 'react-router-dom';
 import ApprovalSteps from '../components/ApprovalSteps';
+import { message } from 'antd';
 
 const AuctionAmountContainer = AmountContainer;
 
@@ -61,7 +62,6 @@ const AuctionPage = () => {
 
     const [current, setCurrent] = useState(0);
     const onChange = (value: number) => {
-        console.log('onChange:', value);
         setCurrent(value);
     };
 
@@ -99,7 +99,6 @@ const AuctionPage = () => {
     }, []);
 
     useEffect(() => {
-        console.log("Effect selectedTab: ", selectedTab);
         getAuctionCountdown();
     }, [selectedTab]);
 
@@ -138,7 +137,6 @@ const AuctionPage = () => {
 
             const lastEvent = typeFilterLogs[typeFilterLogs.length - 1];
             if (lastEvent && lastEvent.eventType == "Charge") {
-                console.log("lastEvent: ", lastEvent);
                 await setLastBid(lastEvent);
                 setShowLastBid(true);
             } else {
@@ -150,7 +148,6 @@ const AuctionPage = () => {
 
             const result = await getAllowance(address);
             if (Number(result) === 0) {
-                console.log("Number result", Number(result))
                 setNeedApprove(true);
             } else {
                 setNeedApprove(false);
@@ -167,8 +164,6 @@ const AuctionPage = () => {
         if (pointsType == undefined) {
             return;
         }
-        console.log("pointsType: ", pointsType);
-        console.log("selectedTab: ", selectedTab);
         const startTimeResult = await readContract(
             config, {
             abi: auctionABI,
@@ -190,7 +185,6 @@ const AuctionPage = () => {
             startCountdownTimer(nowSec, Number(startTime) - nowSec, 1, setAuctionCountdown, getAuctionCountdown);
             setCountdownType('begin');
         }
-        console.log("setCountdownType: ", countdownType);
         // TOCHECK?
 
         const starting_price = Number(ethers.formatEther(startingPrice));
@@ -205,7 +199,6 @@ const AuctionPage = () => {
         }
 
         setBidQuantity(points_to_sell.toFixed(0));
-        console.log("points to sell", points_to_sell);
         setBidPrice(starting_price.toFixed(4));
         setTotalPrice((starting_price * points_to_sell).toFixed(6));
         // pointsToSell
@@ -228,13 +221,11 @@ const AuctionPage = () => {
     const handleBid = async () => {
         setIsPending(true);
         if (!isConnected) {
-            console.log('Wallet not connected');
             setIsPending(false);
             return;
         }
 
         if (Number(bidPrice) <= 0 || Number(bidQuantity) <= 0) {
-            console.log('Bid price and quantity must be greater than 0');
             setModalText('Bid price and quantity must be greater than 0');
             setIsOpen(true);
             setIsPending(false);
@@ -242,9 +233,6 @@ const AuctionPage = () => {
         }
 
         if (Number(bidPrice) < startingPrice) {
-            console.log('Bid price must be greater than starting price');
-            console.log('Bid price:', bidPrice);
-            console.log('Starting price:', startingPrice.toFixed(4));
             setModalText(`Bid price must be greater than starting price.
             BidPrice: {bidPrice} ezETH Starting price: ${startingPrice.toFixed(4)}`);
             setIsOpen(true);
@@ -253,9 +241,6 @@ const AuctionPage = () => {
         }
 
         if (Number(bidQuantity) > pointsToSell) {
-            console.log('Bid quantity must be less than points to sell');
-            console.log('Bid quantity:', bidQuantity);
-            console.log('Points to sell:', pointsToSell);
             setModalText(`Exceeding the auction supply`);
             setIsOpen(true);
             setIsPending(false);
@@ -263,7 +248,6 @@ const AuctionPage = () => {
         }
 
         // Implement logic to place a bid
-        console.log('Placing bid:', bidQuantity, 'at', bidPrice, 'ETH');
 
         const pointsType = pointsStr2Num.get(selectedTab);
         if (pointsType == undefined) {
@@ -271,8 +255,6 @@ const AuctionPage = () => {
             return;
         }
 
-        console.log("BIDPRICE", ethers.parseEther(bidPrice.toString()));
-        console.log("BIDQUANTITY", ethers.parseEther(bidQuantity.toString()));
         // 调用合约接口进行出价
         try {
             const { result } = await simulateContract(
@@ -285,7 +267,6 @@ const AuctionPage = () => {
                     ethers.parseEther(bidQuantity.toString()),
                     pointsType]
             });
-            console.log("simulateContract placeBid result: ", result);
 
             const hash = await writeContract(config, {
                 abi: auctionABI,
@@ -297,16 +278,13 @@ const AuctionPage = () => {
                     pointsType]
             });
 
-            console.log("hash: ", hash);
-
             const transactionReceipt = await waitForTransactionReceipt(config, {
                 hash: hash,
             })
 
-            console.log("transactionReceipt: ", transactionReceipt);
             fetchBidHistory();
         } catch (error) {
-            console.log("error: ", error);
+            message.error("Failed to place bid");
         }
         setIsPending(false);
     };
@@ -334,7 +312,6 @@ const AuctionPage = () => {
     const onApprove = async () => {
         setIsPending(true);
         if (address == undefined) {
-            console.log("还没登陆！");
             setIsPending(false);
             return;
         }
@@ -342,10 +319,9 @@ const AuctionPage = () => {
             await approveToken(address);
             checkApprove();
         } catch (error) {
-            console.log("error: ", error);
+            message.error("Failed to approve token");
         } finally {
             if (!needApprove) {
-                console.log("needApprove: ", needApprove);
                 await setCurrent(1);
             }
             setIsPending(false);
