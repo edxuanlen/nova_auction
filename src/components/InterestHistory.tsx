@@ -17,18 +17,15 @@ const InterestHistory: React.FC<InterestHistoryProps> = ({ infos, isOpen, onClos
 
     const [currentPage, setCurrentPage] = useState(0);
 
-    // 计算总页数
     let currentPageData = [];
     let handlePageClick;
     let pageCount = 0;
     if (infos != undefined) {
         pageCount = Math.ceil(infos.length / itemsPerPage);
 
-        // 获取当前页的数据
         const offset = currentPage * itemsPerPage;
         currentPageData = infos.slice(offset, offset + itemsPerPage);
 
-        // 处理页码变化
         handlePageClick = ({ selected }) => {
             setCurrentPage(selected);
         };

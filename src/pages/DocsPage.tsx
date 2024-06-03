@@ -14,10 +14,8 @@ import { marked as markedParser } from 'marked';
 const MarkdownComponent = ({ markdownText }: { markdownText: string }) => {
     const renderer = new markedParser.Renderer();
 
-    // 原始的图片渲染函数
     const originalRendererImage = renderer.image;
     renderer.image = (href, title, text) => {
-        // 可以在这里修改href，例如加上基础路径
         href = `${href}`;
         return originalRendererImage.call(renderer, href, title, text);
     };
@@ -50,7 +48,7 @@ const { Header, Content, Footer, Sider } = Layout;
 
 const DocsPageContainer = styled.div`
   position: fixed;
-  top: 100px; // 根据 Header 的高度设置 top 值
+  top: 100px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -59,7 +57,7 @@ const DocsPageContainer = styled.div`
   background-color: #ffffff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-  overflow-y: auto; // 添加垂直滚动条
+  overflow-y: auto;
 `;
 
 

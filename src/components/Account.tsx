@@ -3,7 +3,7 @@ import { BigNumber } from 'ethers';
 import { EzETHContractAddress } from '../config';
 
 
-// 自定义钩子，返回余额
+// Custom hook to return the balance
 export const getezETHBalance = (): {
     balance: {
         decimals: number;

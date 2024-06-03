@@ -179,7 +179,7 @@ const WalletIcon = styled.img`
 `;
 
 const ConnectWalletButton = styled.button`
-  display: block; /* 块级元素支持宽度和溢出设置 */
+  display: block;
 
   font-size: 1rem;
   font-weight: bold;
@@ -191,7 +191,6 @@ const ConnectWalletButton = styled.button`
   cursor: pointer;
   margin-right: 15%;
 
-  //   调整 ConnectWalletButton 组件的样式,使其更加醒目
   padding: 0.75rem 1.5rem;
   font-size: 1.1rem;
   background-color: #2196f3;
@@ -201,9 +200,9 @@ const ConnectWalletButton = styled.button`
       background-color: #1976d2;
     }
 
-  width: 10%; /* 根据需要设置按钮的固定宽度 */
-  overflow: hidden; /* 隐藏溢出的文本 */
-  text-overflow: ellipsis; /* 设置溢出文本显示省略号 */
-  white-space: nowrap; /* 防止文本换行 */
+  width: 10%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
 `;

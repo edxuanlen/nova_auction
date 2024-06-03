@@ -12,7 +12,6 @@ export class LogCollector extends Component {
     }
 
     componentDidMount() {
-        // 重写 console.log 方法
         const originalConsoleLog = console.log;
         console.log = (...args) => {
             this.setState((prevState) => ({
@@ -21,7 +20,6 @@ export class LogCollector extends Component {
             originalConsoleLog(...args);
         };
 
-        // 重写 console.info 方法
         const originalConsoleInfo = console.info;
         console.info = (...args) => {
             this.setState((prevState) => ({
@@ -30,7 +28,6 @@ export class LogCollector extends Component {
             originalConsoleInfo(...args);
         };
 
-        // 重写 console.warn 方法
         const originalConsoleWarn = console.warn;
         console.warn = (...args) => {
             this.setState((prevState) => ({
@@ -39,7 +36,6 @@ export class LogCollector extends Component {
             originalConsoleWarn(...args);
         };
 
-        // 重写 console.error 方法
         const originalConsoleError = console.error;
         console.error = (...args) => {
             this.setState((prevState) => ({
@@ -51,21 +47,14 @@ export class LogCollector extends Component {
 
     handleSendLogs = () => {
         const { logs } = this.state;
-        // 使用 json-bigint 库序列化日志
         const serializedLogs = JSONBig.stringify(logs, null, 2);
-        // 创建 Blob 对象
         const blob = new Blob([serializedLogs], { type: 'application/json' });
-        // 创建下载链接
         const url = URL.createObjectURL(blob);
-        // 创建 a 标签并设置下载属性
         const link = document.createElement('a');
         link.href = url;
         link.download = 'logs.json';
-        // 模拟点击下载链接
         link.click();
-        // 释放 URL 对象
         URL.revokeObjectURL(url);
-        // 清空日志状态
         this.setState({ logs: [] });
     };
 
@@ -96,7 +85,7 @@ const FloatingButton = styled.div`
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
   transition: background-color 0.3s ease;
-  font-size: 12px; // 设置字体大小为 16px
+  font-size: 12px;
 
   &:hover {
     background-color: #0056b3;

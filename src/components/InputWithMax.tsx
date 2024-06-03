@@ -7,8 +7,8 @@ const Container = styled.div`
   border: 1px solid #ccc;
   border-radius: 4px;
   overflow: hidden;
-  background-color: #2a2a2a; /* 调整背景颜色 */
-  width: 300px; /* 调整组件宽度 */
+  background-color: #2a2a2a;
+  width: 300px;
 
   margin-right: 10px;
 `;
@@ -18,8 +18,8 @@ const StyledInput = styled.input`
   border: none;
   padding: 10px;
   font-size: 16px;
-  color: #fff; /* 调整文字颜色 */
-  background-color: transparent; /* 使输入框背景透明 */
+  color: #fff;
+  background-color: transparent;
 
   &:focus {
     outline: none;
@@ -27,15 +27,15 @@ const StyledInput = styled.input`
 `;
 
 const MaxButton = styled.button`
-  background-color: transparent; /* 使按钮背景透明 */
+  background-color: transparent;
   border: none;
   padding: 10px;
   cursor: pointer;
-  color: #888; /* 调整文字颜色 */
+  color: #888;
   font-weight: bold;
 
   &:hover {
-    color: #fff; /* 调整悬停时候的颜色 */
+    color: #fff;
   }
 `;
 

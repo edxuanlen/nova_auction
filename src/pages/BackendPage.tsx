@@ -97,14 +97,13 @@ const AllAuctions: React.FC<AllAuctionsProps> = ({ auctions, handleDelete }) => 
 };
 
 
-// 表单容器
 const FormContainer = styled.div`
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #000000;
   width: 100%;
-  margin: 20px auto; // 居中
+  margin: 20px auto;
 `;
 
 const PointsSelect = styled.select`
@@ -116,23 +115,20 @@ const PointsSelect = styled.select`
 `;
 
 
-// 标签样式
 const Label = styled.label`
   font-weight: bold;
-  display: block; // 使每个标签独立一行
-  margin-bottom: 8px; // 为标签和输入框之间添加间距
+  display: block;
+  margin-bottom: 8px;
 `;
 
-// 输入框样式
 const Input = styled.input`
-  width: 100%; // 使输入框占满宽度
+  width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin-bottom: 16px; // 每个输入框之间添加间距
+  margin-bottom: 16px;
 `;
 
-// 按钮样式
 const SubmitButton = styled.button`
   padding: 10px 20px;
   background-color: #3498db;
@@ -208,8 +204,8 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
             value={newAuction.pointsType}
             onChange={handleAuctionChange}
           >
-            <option value="EzPoints">EzPoints</option> {/* 第一个选项 */}
-            <option value="ElPoints">ElPoints</option> {/* 第二个选项 */}
+            <option value="EzPoints">EzPoints</option> { }
+            <option value="ElPoints">ElPoints</option> { }
           </PointsSelect>
         </Label>
 
@@ -239,23 +235,6 @@ const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, han
   );
 };
 
-// const columns: ColumnsType<any> = [
-//   {
-//     title: '拍卖时间',
-//     dataIndex: 'username',
-//     key: 'username',
-//   },
-//   {
-//     title: '拍卖类型',
-//     dataIndex: 'username',
-//     key: 'username',
-//   },
-//   {
-//     title: '拍卖日期',
-//     dataIndex: 'date_joined',
-//     key: 'date_joined',
-//   },
-// ];
 
 
 const BackendPage = () => {
@@ -274,7 +253,6 @@ const BackendPage = () => {
   newAuction.endTime.setHours(newAuction.startTime.getHours() + 20);
   console.log("newAuction", newAuction);
 
-  // 用于判断当前用户是否是管理员
   const isAdmin = (address != undefined) && (ADMIN_ADDRESS.includes(address.toLowerCase()));
 
   const handleAuctionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -286,13 +264,11 @@ const BackendPage = () => {
   };
 
   const handleSubmit = () => {
-    // 处理提交拍卖会的逻辑
     // const newAuctions = [...auctions, newAuction];
     // setAuctions(newAuctions);
 
     console.log("newAuction", newAuction);
     createAuction(newAuction);
-    // 清空表单
     setNewAuction({
       startTime: new Date(),
       endTime: new Date(),

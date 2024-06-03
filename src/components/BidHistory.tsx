@@ -21,14 +21,11 @@ const BidHistory: React.FC<BidHistoryProps> = ({ events, isOpen, filter, onClose
 
     const [currentPage, setCurrentPage] = useState(0);
 
-    // 计算总页数
     const pageCount = Math.ceil(events.length / itemsPerPage);
 
-    // 获取当前页的数据
     const offset = currentPage * itemsPerPage;
     const currentPageData = events.slice(offset, offset + itemsPerPage);
 
-    // 处理页码变化
     const handlePageClick = ({ selected }) => {
         setCurrentPage(selected);
     };

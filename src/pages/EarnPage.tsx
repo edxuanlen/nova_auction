@@ -288,15 +288,12 @@ const EarnPage = () => {
         // convert to ether
         const etherAmount = ethers.parseEther(amount.toString())
 
-        // etherAmount 需要转换一下
         const LPToken = await readContract(config, {
             abi: auctionABI,
             address: AuctionContractAddress,
             functionName: "toLpToken",
             args: [etherAmount]
         });
-
-        // 准备合约写入，传递合约信息和要调用的方法及其参数
 
         const result = simulateContract(
             config, {
@@ -332,7 +329,6 @@ const EarnPage = () => {
     const onApprove = async () => {
         setIsPending(true);
         if (address == undefined) {
-            console.log("还没登陆！");
             message.warning("No login! Please login first!");
             setIsPending(false);
             return;
