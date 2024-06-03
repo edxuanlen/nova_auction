@@ -22,7 +22,6 @@ function BlockTimestampSync() {
         const updateTimestampDisplay = (timestamp: number) => {
             const date = new Date(timestamp * 1000);
             const formattedDate = date.toLocaleString();
-            console.log('Synced Timestamp:', formattedDate);
         };
 
         let lastExecutionTime = 0;

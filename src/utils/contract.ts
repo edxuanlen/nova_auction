@@ -130,7 +130,6 @@ export const getApyHistory = async (walletAddress: Address) => {
         // const
         // walletAddress
         const balance = await getEzETHBalance(walletAddress, BigInt(log.blockNumber));
-        console.log("Balance: ", balance);
         if (balance <= MinBlanace) {
             continue;
         }
@@ -223,15 +222,11 @@ export const getApr = async () => {
 }
 
 export const getContractEzETHBalance = async (blockNumber: bigint) => {
-    console.log("blockNumber:", blockNumber);
     try {
         const Result = await ezContract.balanceOf(auctionContractAddress, { blockTag: blockNumber });
 
         return Result;
     } catch (error) {
-        console.log("blockNumber:", blockNumber);
-        console.log("ezETHContractAddress:", ezETHContractAddress);
-        console.log("auctionContractAddress:", auctionContractAddress);
         console.error(error);
         return 0n;
     }
@@ -430,7 +425,6 @@ export async function getAllowance(address: Address) {
         functionName: 'allowance',
         args: [address, auctionContractAddress],
     });
-    console.log("allowance: ", result);
 
     return ethers.formatEther(result);
 }

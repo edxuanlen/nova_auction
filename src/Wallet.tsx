@@ -1,14 +1,15 @@
 import { ConnectWallet } from './components/ConnectWallet';
-import AntWallet from './components/AntConnect';
+import MyWallet from './components/RanbowKitWallet';
+// import MyWallet from './components/AntConnect';
 
-export const Wallet = () => {
-  return (
-    <ConnectWallet />
-  );
-}
+// export const Wallet = () => {
+//   return (
+//     <ConnectWallet />
+//   );
+// }
 
 export const WalletOptionsButton = () => {
   return (
-    <AntWallet />
+    <MyWallet />
   );
 }

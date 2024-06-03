@@ -163,7 +163,6 @@ const EarnPage = () => {
 
     const switchNetwork = async () => {
         if (isConnected) {
-            console.log("isConnected: ", isConnected);
 
             const hexString = window.ethereum.chainId;
             const chainIdBigInt = BigInt(hexString);

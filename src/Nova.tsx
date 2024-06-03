@@ -10,21 +10,23 @@ import { LogCollector, BlockTimestampSync } from './components';
 
 import './components/EventWatcher';
 
-import { Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate, useLocation, useRouteLoaderData } from 'react-router-dom';
 
-// import { contract, ezContract, tokenContract } from './utils/contract';
+import { getCookieByKey, setCookie } from './utils/cookie';
 
 import EarnPage from './pages/EarnPage';
 import DocsPage from './pages/DocsPage';
 import AuctionPage from './pages/AuctionPage';
 import BackendPage from './pages/BackendPage';
 
+import { watchAccount } from '@wagmi/core'
+
 import { useAccountEffect, useAccount } from 'wagmi'
 import { clearDB } from './utils/contract';
-import { ADMIN_ADDRESS } from './config'
+import { ADMIN_ADDRESS, config } from './config'
 import React from 'react';
 
-import { FaTwitter, FaGithub, FaTelegram, FaDiscord } from 'react-icons/fa';
+import { FaTwitter, FaGithub, FaTelegram, FaDiscord, FaWindows } from 'react-icons/fa';
 import ReactGA from 'react-ga4';
 import TVLShower from './components/TVLShower';
 
@@ -67,11 +69,31 @@ const NovaPage = () => {
     }
   }, []);
 
+  watchAccount(config, {
+    onChange: (account) => {
+
+      if (account.address == undefined) {
+        return;
+      }
+
+      const key = 'lastaccount';
+      const lastAccount = getCookieByKey(key);
+      if (lastAccount == undefined) {
+        setCookie(key, account.address);
+      }
+      else if (lastAccount != account.address) {
+        clearDB();
+        setCookie(key, account.address);
+        window.location.reload();
+      }
+    }
+  });
 
   useAccountEffect({
     onDisconnect() {
       console.log('Disconnected!')
       clearDB();
+      window.location.reload();
     },
   });
 
@@ -127,7 +149,9 @@ const NovaPage = () => {
           }} style={{ marginRight: '0.5rem', cursor: 'pointer' }}
           />
         </div>
-        <WalletOptionsButton />
+        <WalletContaioner>
+          <WalletOptionsButton />
+        </WalletContaioner>
 
         {isAdmin &&
           (<BidHistoryButton onClick={() => (navigate("/admin"))}>Go to Backend</BidHistoryButton>)
@@ -162,6 +186,13 @@ const NovaPage = () => {
 
   );
 };
+
+const WalletContaioner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5%;
+`;
 
 const Container = styled.div`
   position: absolute;

@@ -156,30 +156,6 @@ interface AuctionFormProps {
 }
 
 const AuctionForm: React.FC<AuctionFormProps> = ({ handleSubmit, newAuction, handleAuctionChange }) => {
-
-  // update points
-
-  //         p0 = PointsAuction.functions.getCurrentPoints(0).call() - PointsAuction.functions.getSoldPoints(0).call()
-  // p1 = PointsAuction.functions.getCurrentPoints(1).call() - PointsAuction.functions.getSoldPoints(1).call()
-  // print(PointsAuction.functions.createAuction(
-  //     [0,1],
-  //     [
-  //         [
-  //             int(time.time() + delay * 60) ,
-  //             duration * 60,
-  //             p0,
-  //             p0,
-  //             10 ** 10,
-  //             1
-  //     ], [
-  //             int(time.time() + delay * 60),
-  //             duration * 60,
-  //             p1,
-  //             p1,
-  //             10 ** 10,
-  //             1
-  //     ],]
-  // ).transact({'from': admin.address}).hex())
   return (
     <FormContainer>
       <h2>Create a New Auction</h2>

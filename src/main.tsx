@@ -14,48 +14,24 @@ globalThis.Buffer = Buffer
 
 const queryClient = new QueryClient()
 
-import { BrowserRouter as Router, Route, Link, Routes, Navigate, useNavigate } from 'react-router-dom';
-
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <React.StrictMode>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <NovaPage />
-        </QueryClientProvider>
-      </WagmiProvider>
-    </React.StrictMode>,
-  },
-  {
-    path: "/admin",
-    element: <React.StrictMode>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <BackendPage />
-        </QueryClientProvider>
-      </WagmiProvider>
-    </React.StrictMode>,
-  },
-]);
-
-// ReactDOM.createRoot(document.getElementById('root')!).render(
-//   <React.StrictMode>
-//     <RouterProvider router={router} />
-//   </React.StrictMode>
-// );
+import { BrowserRouter as Router } from 'react-router-dom';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { arbitrum, arbitrumSepolia } from 'viem/chains'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Router>
-      <WagmiProvider config={config}>
+      <WagmiProvider config={config}  >
         <QueryClientProvider client={queryClient}>
-          <NovaPage />
+          <RainbowKitProvider
+
+            // coolMode
+            locale='en'
+            initialChain={
+              import.meta.env.VITE_ENVIRONMENT === 'sepolia' ? arbitrumSepolia : arbitrum}
+          >
+            <NovaPage />
+          </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </Router>

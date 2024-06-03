@@ -14,22 +14,18 @@ import {
 
 import { config } from '../config';
 import { foundry, polygon, mainnet, localhost, arbitrumSepolia, arbitrum } from 'wagmi/chains';
+import { QueryClient } from '@tanstack/react-query';
 
 
 const App: React.FC = () => {
+    const queryClient = new QueryClient();
     return (
         <WagmiWeb3ConfigProvider
-            eip6963={{
-                autoAddInjectedWallets: true,
-            }}
+            // eip6963={{
+            //     autoAddInjectedWallets: true,
+            // }}
+            queryClient={queryClient}
             wallets={[
-                // new UniversalWallet({
-                //     name: 'TestWallet',
-                //     remark: 'My TestWallet',
-                //     icon: <EthereumCircleColorful />,
-                //     extensions: [],
-                //     group: 'More',
-                // }),
                 TokenPocket({
                     group: 'More',
                 }),
@@ -40,17 +36,15 @@ const App: React.FC = () => {
                     group: 'Popular',
                 }),
                 WalletConnect({
-                    group: 'More',
+                    group: 'More'
                 }),
-                CoinbaseWallet({
-                    group: 'Popular',
-                }),
-                SafeheronWallet({
-                    group: 'More',
-                }),
+                // CoinbaseWallet({
+                //     group: 'Popular'
+                // }),
             ]}
             chains={import.meta.env.VITE_ENVIRONMENT === 'sepolia' ? [arbitrumSepolia] : [arbitrum]}
             config={config}
+
         >
             <Connector>
                 <ConnectButton style={{ marginRight: '12%', color: '#000000', background: '#4caf50' }} />

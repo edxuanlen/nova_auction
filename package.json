@@ -27,6 +27,7 @@
     "@ant-design/web3": "^1.10.0",
     "@ant-design/web3-wagmi": "^2.4.2",
     "@biomejs/biome": "^1.1.2",
+    "@rainbow-me/rainbowkit": "^2.1.1",
     "@typechain/ethers-v6": "^0.5.1",
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",

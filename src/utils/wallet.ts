@@ -51,7 +51,6 @@ export async function getWalletBalance(address: Address) {
         functionName: 'balanceOf',
         args: [address]
     });
-    console.log("wallet balance result:", result);
 
     return Number(ethers.formatEther(result))
 }
@@ -62,7 +61,6 @@ export const flushWalletBalance = async (address: Address,
         return;
     } else {
         const result = await getWalletBalance(address);
-        console.log("wallet balance result:", result);
 
         setezETHBalance(result);
     }
